@@ -30,6 +30,10 @@ const Dashboard: React.FC = () => {
     navigate('/');
   };
 
+  const navigateToProjects = () => {
+    navigate('/admin-dashboard/projects');
+  };
+
   return (
     <Box bg="gray.50" minH="100vh">
       <Flex
@@ -116,6 +120,7 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               _hover={{ boxShadow: "md" }}
               cursor="pointer"
+              onClick={navigateToProjects}
             >
               <VStack spacing={3} align="center">
                 <Box boxSize={10} bg="green.500" borderRadius="full" display="flex" alignItems="center" justifyContent="center">

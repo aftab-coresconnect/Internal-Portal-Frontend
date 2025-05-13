@@ -1,57 +1,59 @@
-import { Dispatch } from 'redux';
-import * as authService from '../../api/authService';
-import {
-  loginStart,
-  loginSuccess,
-  loginFailure,
-  registerStart,
-  registerSuccess,
-  registerFailure,
-  logout as logoutAction,
-} from './authSlice';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../api/axios';
+import { User } from './authSlice';
 
-// Login user
-export const loginUser = (email: string, password: string) => async (dispatch: Dispatch) => {
-  try {
-    dispatch(loginStart());
-    const userData = await authService.login(email, password);
-    dispatch(loginSuccess({
-      id: userData._id,
-      name: `${userData.firstName} ${userData.lastName}`,
-      email: userData.email,
-      role: userData.role,
-      token: userData.token,
-    }));
-    return userData;
-  } catch (error: any) {
-    const message = error.response?.data?.message || 'Login failed';
-    dispatch(loginFailure(message));
-    throw error;
+// Login action
+export const login = createAsyncThunk(
+  'auth/login',
+  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      
+      // Store user info in localStorage
+      localStorage.setItem('token', data.token);
+      
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Login failed');
+    }
   }
-};
+);
 
-// Register user
-export const registerUser = (userData: any) => async (dispatch: Dispatch) => {
-  try {
-    dispatch(registerStart());
-    const user = await authService.register(userData);
-    dispatch(registerSuccess({
-      id: user._id,
-      name: `${user.firstName} ${user.lastName}`,
-      email: user.email,
-      role: user.role,
-      token: user.token,
-    }));
-    return user;
-  } catch (error: any) {
-    const message = error.response?.data?.message || 'Registration failed';
-    dispatch(registerFailure(message));
-    throw error;
+// Register action
+export const register = createAsyncThunk(
+  'auth/register',
+  async (
+    { name, email, password, role }: { name: string; email: string; password: string; role: string },
+    { rejectWithValue }
+  ) => {
+    try {      
+      const { data } = await api.post('/auth/register', { name, email, password, role });
+      
+      // Store user info in localStorage
+      localStorage.setItem('token', data.token);
+      
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+    }
   }
-};
+);
 
-// Logout user
-export const logout = () => (dispatch: Dispatch) => {
-  authService.logout();
-  dispatch(logoutAction());
-}; 
+// Logout action
+export const logout = createAsyncThunk('auth/logout', async () => {
+  localStorage.removeItem('token');
+  return null;
+});
+
+// Fetch users (for admin to assign to projects)
+export const fetchUsers = createAsyncThunk(
+  'auth/fetchUsers',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get('/auth/users');
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
+    }
+  }
+); 
