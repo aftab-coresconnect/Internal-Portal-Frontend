@@ -1,24 +1,26 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { login, register, logout, fetchUsers } from './authActions';
 
 // Define user interface
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: string;
-  token: string;
 }
 
 // Define auth state interface
 export interface AuthState {
   user: User | null;
+  users: User[];
   isLoading: boolean;
   error: string | null;
 }
 
 // Initial state
 const initialState: AuthState = {
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : null,
+  user: null,
+  users: [],
   isLoading: false,
   error: null,
 };
@@ -28,62 +30,62 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Login actions
-    loginStart: (state) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    loginSuccess: (state, action: PayloadAction<User>) => {
-      state.isLoading = false;
-      state.user = action.payload;
-      state.error = null;
-      localStorage.setItem('user', JSON.stringify(action.payload));
-    },
-    loginFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    },
-
-    // Register actions
-    registerStart: (state) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    registerSuccess: (state, action: PayloadAction<User>) => {
-      state.isLoading = false;
-      state.user = action.payload;
-      state.error = null;
-      localStorage.setItem('user', JSON.stringify(action.payload));
-    },
-    registerFailure: (state, action: PayloadAction<string>) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    },
-
-    // Logout action
-    logout: (state) => {
-      state.user = null;
-      localStorage.removeItem('user');
-    },
-
-    // Clear error
     clearError: (state) => {
       state.error = null;
     }
   },
+  extraReducers: (builder) => {
+    builder
+      // Login cases
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Register cases
+      .addCase(register.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Logout case
+      .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+      })
+      
+      // Fetch users cases (for project management)
+      .addCase(fetchUsers.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.users = action.payload;
+      })
+      .addCase(fetchUsers.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
-// Export actions
-export const {
-  loginStart,
-  loginSuccess,
-  loginFailure,
-  registerStart,
-  registerSuccess,
-  registerFailure,
-  logout,
-  clearError,
-} = authSlice.actions;
-
-// Export reducer
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer; 
