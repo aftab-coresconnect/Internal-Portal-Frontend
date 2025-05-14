@@ -207,6 +207,8 @@ const ProjectDetails: React.FC = () => {
         return 'orange';
       case 'Completed':
         return 'blue';
+      case 'Delivered':
+        return 'purple';
       default:
         return 'gray';
     }
@@ -348,6 +350,93 @@ const ProjectDetails: React.FC = () => {
           )}
         </Box>
       </SimpleGrid>
+      
+      {/* Satisfaction Ratings Section - Only visible for delivered projects */}
+      {selectedProject.status === 'Delivered' && selectedProject.satisfaction && (
+        <Box bg="white" p={6} borderRadius="md" boxShadow="md" mb={6}>
+          <Heading size="md" mb={4}>Project Satisfaction Ratings</Heading>
+          <Divider mb={4} />
+          
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+            <Box>
+              <VStack align="start" spacing={3}>
+                <HStack>
+                  <Text fontWeight="medium" minWidth="120px">Quality:</Text>
+                  <HStack spacing={1}>
+                    {[...Array(5)].map((_, i) => (
+                      <Box 
+                        key={i}
+                        color={i < (selectedProject.satisfaction?.quality || 0) ? "yellow.400" : "gray.300"}
+                        fontSize="xl"
+                      >
+                        ★
+                      </Box>
+                    ))}
+                  </HStack>
+                </HStack>
+                
+                <HStack>
+                  <Text fontWeight="medium" minWidth="120px">Communication:</Text>
+                  <HStack spacing={1}>
+                    {[...Array(5)].map((_, i) => (
+                      <Box 
+                        key={i}
+                        color={i < (selectedProject.satisfaction?.communication || 0) ? "yellow.400" : "gray.300"}
+                        fontSize="xl"
+                      >
+                        ★
+                      </Box>
+                    ))}
+                  </HStack>
+                </HStack>
+              </VStack>
+            </Box>
+            
+            <Box>
+              <VStack align="start" spacing={3}>
+                <HStack>
+                  <Text fontWeight="medium" minWidth="120px">Timeliness:</Text>
+                  <HStack spacing={1}>
+                    {[...Array(5)].map((_, i) => (
+                      <Box 
+                        key={i}
+                        color={i < (selectedProject.satisfaction?.timeliness || 0) ? "yellow.400" : "gray.300"}
+                        fontSize="xl"
+                      >
+                        ★
+                      </Box>
+                    ))}
+                  </HStack>
+                </HStack>
+                
+                <HStack>
+                  <Text fontWeight="medium" minWidth="120px">Overall:</Text>
+                  <HStack spacing={1}>
+                    {[...Array(5)].map((_, i) => (
+                      <Box 
+                        key={i}
+                        color={i < (selectedProject.satisfaction?.overall || 0) ? "yellow.400" : "gray.300"}
+                        fontSize="xl"
+                      >
+                        ★
+                      </Box>
+                    ))}
+                  </HStack>
+                </HStack>
+              </VStack>
+            </Box>
+          </SimpleGrid>
+          
+          {selectedProject.satisfaction?.reviewNote && (
+            <Box mt={4}>
+              <Text fontWeight="medium">Review Notes:</Text>
+              <Box p={3} bg="gray.50" borderRadius="md" mt={2}>
+                <Text>{selectedProject.satisfaction.reviewNote}</Text>
+              </Box>
+            </Box>
+          )}
+        </Box>
+      )}
       
       {/* Milestones Section */}
       <Box bg="white" p={6} borderRadius="md" boxShadow="md">

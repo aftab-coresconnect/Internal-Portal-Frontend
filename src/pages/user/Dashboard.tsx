@@ -16,9 +16,14 @@ import {
   SimpleGrid,
   Progress,
   Badge,
+  Icon,
 } from '@chakra-ui/react';
+import { FaProjectDiagram, FaTasks, FaUsers } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { logout } from '../../features/auth/authActions';
+import Navbar from '../../components/layout/Navbar';
+import { motion } from 'framer-motion';
+import { fadeInVariants } from '../../utils/animations';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -32,33 +37,12 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box bg="gray.50" minH="100vh">
-      <Flex
-        as="header"
-        bg="blue.600"
-        color="white"
-        p={4}
-        alignItems="center"
-        justifyContent="space-between"
-        boxShadow="md"
-      >
-        <Heading size="md">Internal Portal - Developer Dashboard</Heading>
-        <HStack spacing={4}>
-          <Text>Welcome, {user?.name || 'Developer'}</Text>
-          <Button
-            variant="outline"
-            _hover={{ bg: 'blue.500' }}
-            size="sm"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-        </HStack>
-      </Flex>
-
+      <Navbar />
+      
       <Container maxW="container.xl" py={8}>
-        <VStack spacing={8} align="stretch">
+        <VStack spacing={8} align="stretch" as={motion.div} initial="hidden" animate="visible" variants={fadeInVariants}>
           <Box>
-            <Heading size="lg" mb={2}>
+            <Heading size="lg" mb={2} bgGradient="linear(to-r, brand.500, accent.500)" bgClip="text">
               Welcome to Your Dashboard
             </Heading>
             <Text color="gray.600">
@@ -75,7 +59,7 @@ const Dashboard: React.FC = () => {
                   <Heading size="md">
                     <HStack>
                       <Box bg="teal.500" w={6} h={6} borderRadius="md" display="flex" alignItems="center" justifyContent="center">
-                        <Text fontSize="xs" color="white" fontWeight="bold">P</Text>
+                        <Icon as={FaProjectDiagram} color="white" fontSize="xs" />
                       </Box>
                       <Text>My Projects</Text>
                     </HStack>
@@ -125,7 +109,7 @@ const Dashboard: React.FC = () => {
                   <Heading size="md">
                     <HStack>
                       <Box bg="purple.500" w={6} h={6} borderRadius="md" display="flex" alignItems="center" justifyContent="center">
-                        <Text fontSize="xs" color="white" fontWeight="bold">T</Text>
+                        <Icon as={FaTasks} color="white" fontSize="xs" />
                       </Box>
                       <Text>My Tasks</Text>
                     </HStack>
@@ -171,6 +155,17 @@ const Dashboard: React.FC = () => {
                       API Integration
                     </Text>
                   </Box>
+                  <Divider my={2} />
+                  <Box display="flex" justifyContent="center">
+                    <Button 
+                      size="sm" 
+                      colorScheme="purple" 
+                      variant="outline"
+                      onClick={() => navigate('/user-dashboard/tasks')}
+                    >
+                      View All Tasks
+                    </Button>
+                  </Box>
                 </VStack>
               </CardBody>
             </Card>
@@ -181,7 +176,7 @@ const Dashboard: React.FC = () => {
               <Heading size="md">
                 <HStack>
                   <Box bg="blue.500" w={6} h={6} borderRadius="md" display="flex" alignItems="center" justifyContent="center">
-                    <Text fontSize="xs" color="white" fontWeight="bold">T</Text>
+                    <Icon as={FaUsers} color="white" fontSize="xs" />
                   </Box>
                   <Text>Team Activity</Text>
                 </HStack>

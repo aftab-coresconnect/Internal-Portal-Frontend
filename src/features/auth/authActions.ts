@@ -82,4 +82,17 @@ export const fetchUsers = createAsyncThunk(
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
     }
   }
+);
+
+// Update user profile
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (profileData: Partial<User>, { rejectWithValue }) => {
+    try {
+      const { data } = await api.put('/auth/profile', profileData);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
+    }
+  }
 ); 

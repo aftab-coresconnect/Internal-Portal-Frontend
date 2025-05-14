@@ -26,7 +26,7 @@ export interface Project {
   description: string;
   clientId: string;
   clientName: string;
-  status: 'Active' | 'Paused' | 'Completed';
+  status: 'Active' | 'Paused' | 'Completed' | 'Delivered';
   priority?: 'High' | 'Medium' | 'Low';
   figmaLink?: string;
   repoLink?: string;
@@ -60,7 +60,7 @@ export interface ProjectFormData {
   description: string;
   clientId: string;
   clientName: string;
-  status: 'Active' | 'Paused' | 'Completed';
+  status: 'Active' | 'Paused' | 'Completed' | 'Delivered';
   priority?: 'High' | 'Medium' | 'Low';
   figmaLink?: string;
   repoLink?: string;
@@ -73,6 +73,13 @@ export interface ProjectFormData {
   initialMilestones?: InitialMilestone[];
   budget?: number;
   tags?: string[];
+  satisfaction?: {
+    quality?: number;
+    communication?: number;
+    timeliness?: number;
+    overall?: number;
+    reviewNote?: string;
+  };
 }
 
 interface ProjectState {
