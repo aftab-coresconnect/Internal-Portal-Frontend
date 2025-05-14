@@ -30,7 +30,8 @@ import { AppDispatch, RootState } from '../../store';
 import { 
   fetchProjectMilestones, 
   deleteMilestone,
-  Milestone
+  Milestone,
+  resetMilestoneState
 } from '../../features/milestones/milestoneSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 
@@ -52,6 +53,10 @@ const MilestoneList: React.FC<MilestoneListProps> = ({ projectId }) => {
 
   useEffect(() => {
     dispatch(fetchProjectMilestones(projectId));
+
+    return () => {
+      dispatch(resetMilestoneState());
+    };
   }, [dispatch, projectId]);
 
   const handleDelete = (id: string) => {
@@ -118,20 +123,6 @@ const MilestoneList: React.FC<MilestoneListProps> = ({ projectId }) => {
 
   return (
     <Box>
-      <Flex justifyContent="space-between" alignItems="center" mb={4}>
-        <Heading as="h3" size="md">
-          Project Milestones
-        </Heading>
-        <Button
-          as={RouterLink}
-          to={`/projects/${projectId}/milestones/new`}
-          size="sm"
-          colorScheme="blue"
-          leftIcon={<AddIcon />}
-        >
-          Add Milestone
-        </Button>
-      </Flex>
 
       {projectMilestones.length === 0 ? (
         <Box textAlign="center" py={6} bg="gray.50" borderRadius="md">

@@ -41,7 +41,7 @@ import {
 import { FaEdit, FaArrowLeft, FaGithub, FaFigma, FaJira, FaCalendarAlt, FaCalendarCheck, FaPlus } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../../hooks/reduxHooks';
 import { fetchProjectById, clearSelectedProject } from '../../../features/projects/projectSlice';
-import { createMilestone, MilestoneFormData } from '../../../features/milestones/milestoneSlice';
+import { createMilestone, MilestoneFormData, resetMilestoneState } from '../../../features/milestones/milestoneSlice';
 import MilestoneList from '../../../components/milestones/MilestoneList';
 
 const ProjectDetails: React.FC = () => {
@@ -167,6 +167,10 @@ const ProjectDetails: React.FC = () => {
       });
       onClose();
       resetForm();
+      
+      // Reset milestone state to avoid duplicate notifications
+      dispatch(resetMilestoneState());
+      
       // Refresh project data to show new milestone
       if (id) {
         dispatch(fetchProjectById(id));
@@ -186,6 +190,14 @@ const ProjectDetails: React.FC = () => {
       });
     }
   }, [milestoneError, toast]);
+  
+  // Reset milestone state when component unmounts
+  useEffect(() => {
+    return () => {
+      // Reset milestone state to avoid duplicate notifications on next visit
+      dispatch(resetMilestoneState());
+    };
+  }, [dispatch]);
   
   const getStatusColor = (status: string) => {
     switch (status) {

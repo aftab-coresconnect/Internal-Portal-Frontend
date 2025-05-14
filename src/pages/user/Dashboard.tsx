@@ -34,7 +34,7 @@ const Dashboard: React.FC = () => {
     <Box bg="gray.50" minH="100vh">
       <Flex
         as="header"
-        bg="teal.600"
+        bg="blue.600"
         color="white"
         p={4}
         alignItems="center"
@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
           <Text>Welcome, {user?.name || 'Developer'}</Text>
           <Button
             variant="outline"
-            _hover={{ bg: 'teal.500' }}
+            _hover={{ bg: 'blue.500' }}
             size="sm"
             onClick={handleLogout}
           >

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { login, register, logout, fetchUsers } from './authActions';
+import { login, register, logout, fetchUsers, getUserFromToken } from './authActions';
 
 // Define user interface
 export interface User {
@@ -7,6 +7,20 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  avatar?: string;
+  title?: string;
+  department?: string;
+  skills?: Array<{ name: string; level: number }>;
+  joinedAt?: Date;
+  isActive?: boolean;
+  effectiveness?: {
+    progressScore: number;
+    disciplineScore: number;
+    communicationScore?: number;
+    overall: number;
+    notes?: string;
+    lastEvaluated?: Date;
+  };
 }
 
 // Define auth state interface
@@ -69,6 +83,22 @@ const authSlice = createSlice({
       // Logout case
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+      })
+      
+      // GetUserFromToken cases
+      .addCase(getUserFromToken.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getUserFromToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(getUserFromToken.rejected, (state, action) => {
+        state.isLoading = false;
+        state.user = null;
+        state.error = action.payload as string;
       })
       
       // Fetch users cases (for project management)

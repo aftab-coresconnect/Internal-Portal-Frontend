@@ -33,6 +33,10 @@ const Dashboard: React.FC = () => {
   const navigateToProjects = () => {
     navigate('/admin-dashboard/projects');
   };
+  
+  const navigateToClients = () => {
+    navigate('/admin-dashboard/clients');
+  };
 
   return (
     <Box bg="gray.50" minH="100vh">
@@ -84,15 +88,15 @@ const Dashboard: React.FC = () => {
               <Text color="gray.500">In progress</Text>
             </Stat>
             <Stat>
-              <StatLabel>Tasks</StatLabel>
-              <StatNumber>148</StatNumber>
-              <Text color="gray.500">Assigned</Text>
+              <StatLabel>Clients</StatLabel>
+              <StatNumber>8</StatNumber>
+              <Text color="gray.500">Active accounts</Text>
             </Stat>
           </StatGroup>
 
           <Divider />
 
-          <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6}>
             <GridItem 
               w="100%" 
               bg="white" 
@@ -129,6 +133,26 @@ const Dashboard: React.FC = () => {
                 <Heading size="md">Projects</Heading>
                 <Text textAlign="center">
                   Create and assign projects to teams and track their progress.
+                </Text>
+              </VStack>
+            </GridItem>
+            <GridItem 
+              w="100%" 
+              bg="white" 
+              p={5} 
+              borderRadius="md" 
+              boxShadow="sm" 
+              _hover={{ boxShadow: "md" }}
+              cursor="pointer"
+              onClick={navigateToClients}
+            >
+              <VStack spacing={3} align="center">
+                <Box boxSize={10} bg="orange.500" borderRadius="full" display="flex" alignItems="center" justifyContent="center">
+                  <Text color="white" fontWeight="bold">C</Text>
+                </Box>
+                <Heading size="md">Clients</Heading>
+                <Text textAlign="center">
+                  Manage clients, contact information, and linked projects.
                 </Text>
               </VStack>
             </GridItem>

@@ -32,7 +32,7 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../../hooks/reduxHooks';
 import { fetchProjects, deleteProject, resetProjectState } from '../../../features/projects/projectSlice';
 
@@ -121,15 +121,24 @@ const ProjectList: React.FC = () => {
   
   return (
     <Box>
-      <Flex justifyContent="space-between" alignItems="center" mb={5}>
+      <Flex justifyContent="space-between" alignItems="center" mb={6}>
         <Heading size="lg">Projects</Heading>
-        <Button 
-          leftIcon={<FaPlus />} 
-          colorScheme="blue" 
-          onClick={handleAddProject}
-        >
-          Add Project
-        </Button>
+        <HStack>
+          <Button
+            leftIcon={<FaArrowLeft />}
+            variant="outline"
+            onClick={() => navigate('/admin-dashboard')}
+          >
+            Back to Dashboard
+          </Button>
+          <Button
+            leftIcon={<FaPlus />}
+            colorScheme="blue"
+            onClick={() => navigate('/admin-dashboard/projects/add')}
+          >
+            Add Project
+          </Button>
+        </HStack>
       </Flex>
       
       <Box mb={5}>
