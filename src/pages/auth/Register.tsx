@@ -17,9 +17,11 @@ import {
   Text,
   Link,
   Flex,
+  HStack,
 } from '@chakra-ui/react';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { register } from '../../features/auth/authActions';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const Register: React.FC = () => {
   const [name, setName] = useState('');
@@ -73,8 +75,27 @@ const Register: React.FC = () => {
   return (
     <Flex minH="100vh" align="center" justify="center" bg="gray.50">
       <Container maxW="md" p={8} bg="white" borderRadius="lg" boxShadow="lg">
-        <VStack spacing={8}>
-          <Heading textAlign="center">Create an Account</Heading>
+        <VStack spacing={8} w={{ base: "90%", md: "400px" }}>
+          <Heading>Register</Heading>
+          
+          <HStack w="100%" justifyContent="space-between">
+            <Button 
+              leftIcon={<FaArrowLeft />} 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/home')}
+            >
+              Back to Home
+            </Button>
+            <Button 
+              variant="link" 
+              size="sm" 
+              colorScheme="blue" 
+              onClick={() => navigate('/login')}
+            >
+              Already have an account? Login
+            </Button>
+          </HStack>
           
           {error && (
             <Alert status="error">
@@ -153,13 +174,6 @@ const Register: React.FC = () => {
               >
                 Register
               </Button>
-              
-              <Text textAlign="center">
-                Already have an account?{' '}
-                <Link color="blue.500" onClick={() => navigate('/login')}>
-                  Sign in
-                </Link>
-              </Text>
             </Stack>
           </Box>
         </VStack>

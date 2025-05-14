@@ -37,6 +37,8 @@ import {
   ProjectFormData
 } from '../../../features/projects/projectSlice';
 import { fetchUsers } from '../../../features/auth/authActions';
+import { fetchClients, Client } from '../../../features/clients/clientSlice';
+import { RootState } from '../../../store';
 
 const ProjectForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,13 +49,16 @@ const ProjectForm: React.FC = () => {
 
   const { selectedProject, loading, error, success } = useAppSelector((state) => state.projects);
   const { users } = useAppSelector((state) => state.auth);
+  const { clients } = useAppSelector((state) => (state as RootState).clients);
 
   // Form state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    clientId: '',
     clientName: '',
     status: 'Active' as 'Active' | 'Paused' | 'Completed',
+    priority: 'Medium' as 'High' | 'Medium' | 'Low',
     figmaLink: '',
     repoLink: '',
     jiraLink: '',
@@ -61,9 +66,13 @@ const ProjectForm: React.FC = () => {
     deadline: '',
     techStack: [] as string[],
     assignedDevelopers: [] as string[],
+    projectManager: '',
+    budget: 0,
+    tags: [] as string[],
   });
   
   const [techInput, setTechInput] = useState('');
+  const [tagInput, setTagInput] = useState('');
   
   // Load project data if editing
   useEffect(() => {
@@ -73,6 +82,9 @@ const ProjectForm: React.FC = () => {
     
     // Load users for selection
     dispatch(fetchUsers());
+    
+    // Load clients for selection
+    dispatch(fetchClients());
     
     // Cleanup
     return () => {
@@ -87,8 +99,10 @@ const ProjectForm: React.FC = () => {
       setFormData({
         title: selectedProject.title,
         description: selectedProject.description,
-        clientName: selectedProject.clientName || '',
+        clientId: selectedProject.clientId || '',
+        clientName: selectedProject.clientName,
         status: selectedProject.status,
+        priority: selectedProject.priority || 'Medium',
         figmaLink: selectedProject.figmaLink || '',
         repoLink: selectedProject.repoLink || '',
         jiraLink: selectedProject.jiraLink || '',
@@ -96,6 +110,9 @@ const ProjectForm: React.FC = () => {
         deadline: new Date(selectedProject.deadline).toISOString().split('T')[0],
         techStack: selectedProject.techStack,
         assignedDevelopers: selectedProject.assignedDevelopers.map((dev) => dev._id),
+        projectManager: selectedProject.projectManager?._id || '',
+        budget: selectedProject.budget || 0,
+        tags: selectedProject.tags || [],
       });
     }
   }, [selectedProject, isEdit]);
@@ -182,9 +199,41 @@ const ProjectForm: React.FC = () => {
     }
   };
   
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData({
+        ...formData,
+        tags: [...formData.tags, tagInput.trim()],
+      });
+      setTagInput('');
+    }
+  };
+  
+  const handleRemoveTag = (tag: string) => {
+    setFormData({
+      ...formData,
+      tags: formData.tags.filter((t) => t !== tag),
+    });
+  };
+  
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
+  const handleProjectManagerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      projectManager: e.target.value
+    });
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.description || !formData.startDate || !formData.deadline) {
+    if (!formData.title || !formData.description || !formData.startDate || !formData.deadline || 
+        !formData.clientId || !formData.clientName) {
       toast({
         title: 'Missing required fields',
         status: 'error',
@@ -209,21 +258,73 @@ const ProjectForm: React.FC = () => {
     const projectData: ProjectFormData = {
       title: formData.title,
       description: formData.description,
+      clientId: formData.clientId,
       clientName: formData.clientName,
-      status: formData.status as 'Active' | 'Paused' | 'Completed',
-      figmaLink: formData.figmaLink,
-      repoLink: formData.repoLink,
-      jiraLink: formData.jiraLink,
+      status: formData.status,
+      priority: formData.priority,
+      figmaLink: formData.figmaLink || '',
+      repoLink: formData.repoLink || '',
+      jiraLink: formData.jiraLink || '',
       startDate: formData.startDate,
       deadline: formData.deadline,
       techStack: formData.techStack,
       assignedDevelopers: formData.assignedDevelopers,
+      projectManager: formData.projectManager || undefined,
+      budget: typeof formData.budget === 'string' ? parseFloat(formData.budget) || 0 : formData.budget || 0,
+      tags: formData.tags,
     };
     
+    console.log('Form submission:', isEdit ? 'UPDATE' : 'CREATE');
+    console.log('Project data:', projectData);
+    
     if (isEdit && id) {
-      dispatch(updateProject({ id, projectData }));
+      console.log(`Updating project with ID: ${id}`);
+      dispatch(updateProject({ id, projectData }))
+        .unwrap()
+        .then(() => {
+          console.log('Project update succeeded');
+          toast({
+            title: 'Project updated',
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          });
+          navigate('/admin-dashboard/projects');
+        })
+        .catch((err) => {
+          console.error('Project update failed:', err);
+          toast({
+            title: 'Update failed',
+            description: typeof err === 'string' ? err : 'Could not update project. Please try again.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        });
     } else {
-      dispatch(createProject(projectData));
+      console.log('Creating new project');
+      dispatch(createProject(projectData))
+        .unwrap()
+        .then(() => {
+          console.log('Project creation succeeded');
+          toast({
+            title: 'Project created',
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          });
+          navigate('/admin-dashboard/projects');
+        })
+        .catch((err) => {
+          console.error('Project creation failed:', err);
+          toast({
+            title: 'Creation failed',
+            description: typeof err === 'string' ? err : 'Could not create project. Please try again.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        });
     }
   };
   
@@ -257,13 +358,57 @@ const ProjectForm: React.FC = () => {
             
             <GridItem>
               <FormControl>
-                <FormLabel>Client Name (Optional)</FormLabel>
+                <FormLabel>Client</FormLabel>
+                <Select
+                  name="clientId"
+                  value={formData.clientId}
+                  onChange={(e) => {
+                    const selectedClient = clients.find((client: Client) => client._id === e.target.value);
+                    setFormData({
+                      ...formData,
+                      clientId: e.target.value,
+                      clientName: selectedClient ? selectedClient.name : ''
+                    });
+                  }}
+                >
+                  <option value="">Select a Client</option>
+                  {clients && clients.map((client: Client) => (
+                    <option key={client._id} value={client._id}>
+                      {client.name} - {client.companyName || 'No Company'} ({client.email})
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </GridItem>
+          </Grid>
+          
+          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+            <GridItem>
+              <FormControl isRequired>
+                <FormLabel>Client Name (Display)</FormLabel>
                 <Input 
                   name="clientName" 
                   value={formData.clientName} 
                   onChange={handleChange} 
                   placeholder="Enter client name" 
+                  readOnly={!!formData.clientId}
                 />
+                <FormHelperText>Auto-populated from client selection</FormHelperText>
+              </FormControl>
+            </GridItem>
+            
+            <GridItem>
+              <FormControl>
+                <FormLabel>Status</FormLabel>
+                <Select 
+                  name="status" 
+                  value={formData.status} 
+                  onChange={handleChange}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Paused">Paused</option>
+                  <option value="Completed">Completed</option>
+                </Select>
               </FormControl>
             </GridItem>
           </Grid>
@@ -281,16 +426,16 @@ const ProjectForm: React.FC = () => {
           
           <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
             <GridItem>
-              <FormControl isRequired>
-                <FormLabel>Status</FormLabel>
+              <FormControl>
+                <FormLabel>Priority</FormLabel>
                 <Select 
-                  name="status" 
-                  value={formData.status} 
+                  name="priority" 
+                  value={formData.priority} 
                   onChange={handleChange}
                 >
-                  <option value="Active">Active</option>
-                  <option value="Paused">Paused</option>
-                  <option value="Completed">Completed</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
                 </Select>
               </FormControl>
             </GridItem>
@@ -331,6 +476,39 @@ const ProjectForm: React.FC = () => {
           
           <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
             <GridItem>
+              <FormControl>
+                <FormLabel>Tags</FormLabel>
+                <InputGroup>
+                  <Input 
+                    value={tagInput} 
+                    onChange={(e) => setTagInput(e.target.value)} 
+                    placeholder="Add tag" 
+                    onKeyDown={handleTagKeyDown}
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button h="1.75rem" size="sm" onClick={handleAddTag}>
+                      <FaPlus />
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+                <FormHelperText>Press Enter or click + to add</FormHelperText>
+              </FormControl>
+              
+              <Box mt={2}>
+                <Wrap spacing={2}>
+                  {formData.tags.map((tag, index) => (
+                    <WrapItem key={index}>
+                      <Tag size="md" borderRadius="full" variant="solid" colorScheme="green">
+                        <TagLabel>{tag}</TagLabel>
+                        <TagCloseButton onClick={() => handleRemoveTag(tag)} />
+                      </Tag>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              </Box>
+            </GridItem>
+            
+            <GridItem>
               <FormControl isRequired>
                 <FormLabel>Start Date</FormLabel>
                 <Input 
@@ -341,7 +519,9 @@ const ProjectForm: React.FC = () => {
                 />
               </FormControl>
             </GridItem>
-            
+          </Grid>
+          
+          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
             <GridItem>
               <FormControl isRequired>
                 <FormLabel>Deadline</FormLabel>
@@ -351,6 +531,41 @@ const ProjectForm: React.FC = () => {
                   value={formData.deadline} 
                   onChange={handleChange} 
                 />
+              </FormControl>
+            </GridItem>
+            
+            <GridItem>
+              <FormControl>
+                <FormLabel>Budget</FormLabel>
+                <Input 
+                  name="budget" 
+                  type="number" 
+                  value={formData.budget} 
+                  onChange={handleChange} 
+                  placeholder="Enter project budget"
+                />
+              </FormControl>
+            </GridItem>
+          </Grid>
+          
+          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+            <GridItem>
+              <FormControl>
+                <FormLabel>Project Manager</FormLabel>
+                <Select
+                  name="projectManager"
+                  value={formData.projectManager}
+                  onChange={handleProjectManagerChange}
+                >
+                  <option value="">Select a Project Manager</option>
+                  {users && users
+                    .filter((user: any) => user.role === 'teamLead' || user.role === 'admin')
+                    .map((manager: any) => (
+                      <option key={manager._id} value={manager._id}>
+                        {manager.name} ({manager.role})
+                      </option>
+                    ))}
+                </Select>
               </FormControl>
             </GridItem>
           </Grid>

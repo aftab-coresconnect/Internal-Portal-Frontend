@@ -45,6 +45,32 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   return null;
 });
 
+// Get current user using stored token
+export const getUserFromToken = createAsyncThunk(
+  'auth/getUserFromToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      
+      // If no token, return early
+      if (!token) {
+        return rejectWithValue('No token found');
+      }
+      
+      // Fetch current user with token (the API already adds the token via interceptor)
+      const { data } = await api.get('/auth/me');
+      return data;
+    } catch (error: any) {
+      // If token is invalid, remove it
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+      }
+      return rejectWithValue(error.response?.data?.message || 'Session expired');
+    }
+  }
+);
+
 // Fetch users (for admin to assign to projects)
 export const fetchUsers = createAsyncThunk(
   'auth/fetchUsers',

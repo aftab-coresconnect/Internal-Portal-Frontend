@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { login } from '../../features/auth/authActions';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -55,8 +56,19 @@ const Login: React.FC = () => {
   return (
     <Flex minH="100vh" align="center" justify="center" bg="gray.50">
       <Container maxW="md" p={8} bg="white" borderRadius="lg" boxShadow="lg">
-        <VStack spacing={8}>
-          <Heading textAlign="center">Internal Portal Login</Heading>
+        <VStack spacing={8} w={{ base: "90%", md: "400px" }}>
+          <Heading>Login</Heading>
+          
+          <Box w="100%" textAlign="left">
+            <Button 
+              leftIcon={<FaArrowLeft />} 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/home')}
+            >
+              Back to Home
+            </Button>
+          </Box>
           
           {error && (
             <Alert status="error">

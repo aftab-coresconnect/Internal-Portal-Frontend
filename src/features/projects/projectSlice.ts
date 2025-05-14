@@ -24,8 +24,10 @@ export interface Project {
   _id: string;
   title: string;
   description: string;
-  clientName?: string;
+  clientId: string;
+  clientName: string;
   status: 'Active' | 'Paused' | 'Completed';
+  priority?: 'High' | 'Medium' | 'Low';
   figmaLink?: string;
   repoLink?: string;
   jiraLink?: string;
@@ -33,6 +35,22 @@ export interface Project {
   deadline: string;
   techStack: string[];
   assignedDevelopers: Developer[];
+  projectManager?: Developer;
+  milestones?: string[];
+  tags?: string[];
+  budget?: number;
+  spentBudget?: number;
+  progressPercent?: number;
+  satisfaction?: {
+    quality?: number;
+    communication?: number;
+    timeliness?: number;
+    overall?: number;
+    reviewNote?: string;
+  };
+  notes?: string[];
+  attachments?: { name: string; url: string }[];
+  isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -40,8 +58,10 @@ export interface Project {
 export interface ProjectFormData {
   title: string;
   description: string;
-  clientName?: string;
+  clientId: string;
+  clientName: string;
   status: 'Active' | 'Paused' | 'Completed';
+  priority?: 'High' | 'Medium' | 'Low';
   figmaLink?: string;
   repoLink?: string;
   jiraLink?: string;
@@ -49,7 +69,10 @@ export interface ProjectFormData {
   deadline: string;
   techStack: string[];
   assignedDevelopers: string[];
+  projectManager?: string;
   initialMilestones?: InitialMilestone[];
+  budget?: number;
+  tags?: string[];
 }
 
 interface ProjectState {
@@ -99,10 +122,42 @@ export const createProject = createAsyncThunk(
   'projects/createProject',
   async (projectData: ProjectFormData, { rejectWithValue }) => {
     try {
-      const { data } = await api.post('/projects', projectData);
+      console.log('Creating new project');
+      console.log('Project data:', JSON.stringify(projectData, null, 2));
+      
+      // Ensure budget is a number
+      const processedData = {
+        ...projectData,
+        budget: typeof projectData.budget === 'string' 
+          ? parseFloat(projectData.budget) || 0 
+          : projectData.budget || 0
+      };
+      
+      console.log('Processed project data:', JSON.stringify(processedData, null, 2));
+      const { data } = await api.post('/projects', processedData);
       return data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create project');
+      console.error('Project creation error:', error);
+      
+      // Enhanced error details for debugging
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+        
+        return rejectWithValue(
+          error.response.data?.message || 
+          `Server error: ${error.response.status} - ${error.response.statusText}`
+        );
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('No response received:', error.request);
+        return rejectWithValue('No response from server. Please check your network connection.');
+      } else {
+        // Error setting up the request
+        console.error('Request setup error:', error.message);
+        return rejectWithValue(`Error: ${error.message}`);
+      }
     }
   }
 );
@@ -112,10 +167,33 @@ export const updateProject = createAsyncThunk(
   'projects/updateProject',
   async ({ id, projectData }: { id: string; projectData: ProjectFormData }, { rejectWithValue }) => {
     try {
+      console.log('Updating project:', id);
+      console.log('Update data:', JSON.stringify(projectData, null, 2));
+      
       const { data } = await api.put(`/projects/${id}`, projectData);
       return data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update project');
+      console.error('Project update error:', error);
+      
+      // Enhanced error details for debugging
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+        
+        return rejectWithValue(
+          error.response.data?.message || 
+          `Server error: ${error.response.status} - ${error.response.statusText}`
+        );
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('No response received:', error.request);
+        return rejectWithValue('No response from server. Please check your network connection.');
+      } else {
+        // Error setting up the request
+        console.error('Request setup error:', error.message);
+        return rejectWithValue(`Error: ${error.message}`);
+      }
     }
   }
 );
