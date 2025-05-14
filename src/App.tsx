@@ -1,14 +1,19 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Box } from '@chakra-ui/react';
+import { Box, ChakraProvider } from '@chakra-ui/react';
 import HomePage from './pages/HomePage';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import AdminDashboard from './pages/admin/Dashboard';
 import UserDashboard from './pages/user/Dashboard';
+import EditProfile from './pages/user/EditProfile';
+import TaskList from './pages/user/TaskList';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAppSelector, useAppDispatch } from './hooks/reduxHooks';
 import { getUserFromToken } from './features/auth/authActions';
+import { AnimatePresence } from 'framer-motion';
+import theme from './utils/theme';
+import PageTransition from './components/layout/PageTransition';
 
 // Project Management
 import ProjectList from './pages/admin/projects/ProjectList';
@@ -61,64 +66,138 @@ const App: React.FC = () => {
   }, [user, location.pathname, navigate]);
 
   return (
-    <Box>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/home" element={<HomePage />} />
-        
-        {/* Protected routes */}
-        <Route 
-          path="/admin-dashboard" 
-          element={<ProtectedRoute component={AdminDashboard} requiredRole="admin" />} 
-        />
-        
-        {/* Project Management Routes */}
-        <Route 
-          path="/admin-dashboard/projects" 
-          element={<ProtectedRoute component={ProjectList} requiredRole="admin" />} 
-        />
-        <Route 
-          path="/admin-dashboard/projects/add" 
-          element={<ProtectedRoute component={ProjectForm} requiredRole="admin" />} 
-        />
-        <Route 
-          path="/admin-dashboard/projects/edit/:id" 
-          element={<ProtectedRoute component={ProjectForm} requiredRole="admin" />} 
-        />
-        <Route 
-          path="/admin-dashboard/projects/:id" 
-          element={<ProtectedRoute component={ProjectDetails} requiredRole="admin" />} 
-        />
-        
-        {/* Client Management Routes */}
-        <Route 
-          path="/admin-dashboard/clients" 
-          element={<ProtectedRoute component={ClientList} requiredRole="admin" />} 
-        />
-        <Route 
-          path="/admin-dashboard/clients/add" 
-          element={<ProtectedRoute component={ClientForm} requiredRole="admin" />} 
-        />
-        <Route 
-          path="/admin-dashboard/clients/edit/:id" 
-          element={<ProtectedRoute component={ClientForm} requiredRole="admin" />} 
-        />
-        <Route 
-          path="/admin-dashboard/clients/:id" 
-          element={<ProtectedRoute component={ClientDetails} requiredRole="admin" />} 
-        />
-        
-        <Route 
-          path="/user-dashboard" 
-          element={<ProtectedRoute component={UserDashboard} requiredRole={['developer', 'teamLead']} />} 
-        />
-        
-        {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </Box>
+    <ChakraProvider theme={theme}>
+      <Box>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            {/* Public routes */}
+            <Route path="/login" element={
+              <PageTransition>
+                <Login />
+              </PageTransition>
+            } />
+            <Route path="/register" element={
+              <PageTransition>
+                <Register />
+              </PageTransition>
+            } />
+            <Route path="/home" element={
+              <PageTransition>
+                <HomePage />
+              </PageTransition>
+            } />
+            
+            {/* Protected routes */}
+            <Route 
+              path="/admin-dashboard" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={AdminDashboard} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            
+            {/* Project Management Routes */}
+            <Route 
+              path="/admin-dashboard/projects" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ProjectList} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            <Route 
+              path="/admin-dashboard/projects/add" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ProjectForm} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            <Route 
+              path="/admin-dashboard/projects/edit/:id" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ProjectForm} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            <Route 
+              path="/admin-dashboard/projects/:id" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ProjectDetails} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            
+            {/* Client Management Routes */}
+            <Route 
+              path="/admin-dashboard/clients" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ClientList} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            <Route 
+              path="/admin-dashboard/clients/add" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ClientForm} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            <Route 
+              path="/admin-dashboard/clients/edit/:id" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ClientForm} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            <Route 
+              path="/admin-dashboard/clients/:id" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ClientDetails} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            
+            <Route 
+              path="/user-dashboard" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={UserDashboard} requiredRole={['developer', 'teamLead']} />
+                </PageTransition>
+              } 
+            />
+            
+            <Route 
+              path="/user-dashboard/edit-profile" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={EditProfile} requiredRole={['developer', 'teamLead']} />
+                </PageTransition>
+              } 
+            />
+            
+            <Route 
+              path="/user-dashboard/tasks" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={TaskList} requiredRole={['developer', 'teamLead']} />
+                </PageTransition>
+              } 
+            />
+            
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Routes>
+        </AnimatePresence>
+      </Box>
+    </ChakraProvider>
   );
 };
 

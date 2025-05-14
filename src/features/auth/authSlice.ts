@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { login, register, logout, fetchUsers, getUserFromToken } from './authActions';
+import { login, register, logout, fetchUsers, getUserFromToken, updateProfile } from './authActions';
 
 // Define user interface
 export interface User {
@@ -111,6 +111,21 @@ const authSlice = createSlice({
         state.users = action.payload;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Update profile cases
+      .addCase(updateProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

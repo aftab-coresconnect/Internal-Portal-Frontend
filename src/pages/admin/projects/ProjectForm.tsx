@@ -57,7 +57,7 @@ const ProjectForm: React.FC = () => {
     description: '',
     clientId: '',
     clientName: '',
-    status: 'Active' as 'Active' | 'Paused' | 'Completed',
+    status: 'Active' as 'Active' | 'Paused' | 'Completed' | 'Delivered',
     priority: 'Medium' as 'High' | 'Medium' | 'Low',
     figmaLink: '',
     repoLink: '',
@@ -69,6 +69,13 @@ const ProjectForm: React.FC = () => {
     projectManager: '',
     budget: 0,
     tags: [] as string[],
+    satisfaction: {
+      quality: 0,
+      communication: 0,
+      timeliness: 0,
+      overall: 0,
+      reviewNote: '',
+    }
   });
   
   const [techInput, setTechInput] = useState('');
@@ -113,6 +120,13 @@ const ProjectForm: React.FC = () => {
         projectManager: selectedProject.projectManager?._id || '',
         budget: selectedProject.budget || 0,
         tags: selectedProject.tags || [],
+        satisfaction: {
+          quality: selectedProject.satisfaction?.quality || 0,
+          communication: selectedProject.satisfaction?.communication || 0,
+          timeliness: selectedProject.satisfaction?.timeliness || 0,
+          overall: selectedProject.satisfaction?.overall || 0,
+          reviewNote: selectedProject.satisfaction?.reviewNote || '',
+        }
       });
     }
   }, [selectedProject, isEdit]);
@@ -149,7 +163,7 @@ const ProjectForm: React.FC = () => {
     if (name === 'status') {
       setFormData({
         ...formData,
-        [name]: value as 'Active' | 'Paused' | 'Completed',
+        [name]: value as 'Active' | 'Paused' | 'Completed' | 'Delivered',
       });
     } else {
       setFormData({
@@ -230,6 +244,17 @@ const ProjectForm: React.FC = () => {
     });
   };
   
+  const handleSatisfactionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      satisfaction: {
+        ...formData.satisfaction,
+        [name]: name === 'reviewNote' ? value : Number(value)
+      }
+    });
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.startDate || !formData.deadline || 
@@ -272,6 +297,7 @@ const ProjectForm: React.FC = () => {
       projectManager: formData.projectManager || undefined,
       budget: typeof formData.budget === 'string' ? parseFloat(formData.budget) || 0 : formData.budget || 0,
       tags: formData.tags,
+      satisfaction: formData.status === 'Delivered' ? formData.satisfaction : undefined,
     };
     
     console.log('Form submission:', isEdit ? 'UPDATE' : 'CREATE');
@@ -408,6 +434,7 @@ const ProjectForm: React.FC = () => {
                   <option value="Active">Active</option>
                   <option value="Paused">Paused</option>
                   <option value="Completed">Completed</option>
+                  <option value="Delivered">Delivered</option>
                 </Select>
               </FormControl>
             </GridItem>
@@ -614,6 +641,98 @@ const ProjectForm: React.FC = () => {
               ))}
             </Stack>
           </FormControl>
+          
+          {/* Satisfaction Rating Section - Only visible when status is Delivered */}
+          {formData.status === 'Delivered' && (
+            <Box bg="gray.50" p={4} borderRadius="md" border="1px" borderColor="gray.200">
+              <Heading size="md" mb={4}>Project Satisfaction Rating</Heading>
+              
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+                <GridItem>
+                  <FormControl>
+                    <FormLabel>Quality Rating (1-5)</FormLabel>
+                    <Select
+                      name="quality"
+                      value={formData.satisfaction.quality}
+                      onChange={handleSatisfactionChange}
+                    >
+                      <option value={0}>Select Rating</option>
+                      <option value={1}>1 - Poor</option>
+                      <option value={2}>2 - Below Average</option>
+                      <option value={3}>3 - Average</option>
+                      <option value={4}>4 - Good</option>
+                      <option value={5}>5 - Excellent</option>
+                    </Select>
+                  </FormControl>
+                </GridItem>
+                
+                <GridItem>
+                  <FormControl>
+                    <FormLabel>Communication Rating (1-5)</FormLabel>
+                    <Select
+                      name="communication"
+                      value={formData.satisfaction.communication}
+                      onChange={handleSatisfactionChange}
+                    >
+                      <option value={0}>Select Rating</option>
+                      <option value={1}>1 - Poor</option>
+                      <option value={2}>2 - Below Average</option>
+                      <option value={3}>3 - Average</option>
+                      <option value={4}>4 - Good</option>
+                      <option value={5}>5 - Excellent</option>
+                    </Select>
+                  </FormControl>
+                </GridItem>
+                
+                <GridItem>
+                  <FormControl>
+                    <FormLabel>Timeliness Rating (1-5)</FormLabel>
+                    <Select
+                      name="timeliness"
+                      value={formData.satisfaction.timeliness}
+                      onChange={handleSatisfactionChange}
+                    >
+                      <option value={0}>Select Rating</option>
+                      <option value={1}>1 - Poor</option>
+                      <option value={2}>2 - Below Average</option>
+                      <option value={3}>3 - Average</option>
+                      <option value={4}>4 - Good</option>
+                      <option value={5}>5 - Excellent</option>
+                    </Select>
+                  </FormControl>
+                </GridItem>
+                
+                <GridItem>
+                  <FormControl>
+                    <FormLabel>Overall Rating (1-5)</FormLabel>
+                    <Select
+                      name="overall"
+                      value={formData.satisfaction.overall}
+                      onChange={handleSatisfactionChange}
+                    >
+                      <option value={0}>Select Rating</option>
+                      <option value={1}>1 - Poor</option>
+                      <option value={2}>2 - Below Average</option>
+                      <option value={3}>3 - Average</option>
+                      <option value={4}>4 - Good</option>
+                      <option value={5}>5 - Excellent</option>
+                    </Select>
+                  </FormControl>
+                </GridItem>
+              </Grid>
+              
+              <FormControl mt={4}>
+                <FormLabel>Review Notes</FormLabel>
+                <Textarea
+                  name="reviewNote"
+                  value={formData.satisfaction.reviewNote}
+                  onChange={handleSatisfactionChange}
+                  placeholder="Enter review notes about the project"
+                  rows={3}
+                />
+              </FormControl>
+            </Box>
+          )}
           
           <HStack spacing={4} mt={5} justify="flex-end">
             <Button 

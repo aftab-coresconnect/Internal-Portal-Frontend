@@ -17,15 +17,22 @@ import {
   Link,
   Flex,
   Image,
+  InputGroup,
+  InputRightElement,
+  Icon,
 } from '@chakra-ui/react';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { login } from '../../features/auth/authActions';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaEye, FaEyeSlash, FaLock, FaEnvelope } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { formVariants, formItemVariants, scaleVariants } from '../../utils/animations';
+import AnimatedButton from '../../components/ui/AnimatedButton';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -53,71 +60,178 @@ const Login: React.FC = () => {
     dispatch(login({ email, password }));
   };
 
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <Flex minH="100vh" align="center" justify="center" bg="gray.50">
-      <Container maxW="md" p={8} bg="white" borderRadius="lg" boxShadow="lg">
-        <VStack spacing={8} w={{ base: "90%", md: "400px" }}>
-          <Heading>Login</Heading>
+    <Flex 
+      minH="100vh" 
+      align="center" 
+      justify="center" 
+      bg="gray.50" 
+      bgGradient="linear(to-b, brand.50, gray.50)"
+    >
+      <Container 
+        maxW="md" 
+        p={8} 
+        bg="white" 
+        borderRadius="xl" 
+        boxShadow="xl"
+        as={motion.div}
+        initial="hidden"
+        animate="visible"
+        variants={scaleVariants}
+      >
+        <VStack spacing={8} w={{ base: "100%", md: "100%" }}>
+          <Box 
+            as={motion.div}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Heading 
+              bgGradient="linear(to-r, brand.400, accent.400)" 
+              bgClip="text"
+            >
+              Internal Portal
+            </Heading>
+          </Box>
           
           <Box w="100%" textAlign="left">
-            <Button 
+            <AnimatedButton
               leftIcon={<FaArrowLeft />} 
               variant="ghost" 
               size="sm" 
               onClick={() => navigate('/home')}
             >
               Back to Home
-            </Button>
+            </AnimatedButton>
           </Box>
           
           {error && (
-            <Alert status="error">
+            <Alert 
+              status="error" 
+              borderRadius="md"
+              as={motion.div}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <AlertIcon />
               {error}
             </Alert>
           )}
           
           {formError && (
-            <Alert status="error">
+            <Alert 
+              status="error" 
+              borderRadius="md"
+              as={motion.div}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <AlertIcon />
               {formError}
             </Alert>
           )}
           
-          <Box as="form" w="100%" onSubmit={handleSubmit}>
-            <Stack spacing={4}>
-              <FormControl id="email" isRequired>
-                <FormLabel>Email</FormLabel>
-                <Input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                />
-              </FormControl>
-              <FormControl id="password" isRequired>
-                <FormLabel>Password</FormLabel>
-                <Input 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                />
-              </FormControl>
-              <Button
-                type="submit"
-                colorScheme="blue"
-                size="lg"
-                isLoading={isLoading}
+          <Box 
+            as={motion.form}
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            w="100%" 
+            onSubmit={handleSubmit}
+          >
+            <Stack spacing={5}>
+              <FormControl 
+                id="email" 
+                isRequired
+                as={motion.div}
+                variants={formItemVariants}
               >
-                Sign In
-              </Button>
-              <Text textAlign="center">
-                Don't have an account?{' '}
-                <Link color="blue.500" onClick={() => navigate('/register')}>
-                  Register
-                </Link>
-              </Text>
+                <FormLabel>Email</FormLabel>
+                <InputGroup>
+                  <Input 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    pr="4.5rem"
+                    borderColor="gray.300"
+                    _focus={{ 
+                      borderColor: 'brand.400',
+                      boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)'
+                    }}
+                  />
+                  <InputRightElement color="gray.400">
+                    <Icon as={FaEnvelope} />
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
+
+              <FormControl 
+                id="password" 
+                isRequired
+                as={motion.div}
+                variants={formItemVariants}
+              >
+                <FormLabel>Password</FormLabel>
+                <InputGroup>
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    borderColor="gray.300"
+                    _focus={{ 
+                      borderColor: 'brand.400',
+                      boxShadow: '0 0 0 1px var(--chakra-colors-brand-400)'
+                    }}
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button 
+                      h="1.75rem" 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={toggleShowPassword}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
+
+              <Box 
+                as={motion.div}
+                variants={formItemVariants}
+                pt={2}
+              >
+                <AnimatedButton
+                  type="submit"
+                  colorScheme="brand"
+                  size="lg"
+                  isLoading={isLoading}
+                  w="100%"
+                  boxShadow="md"
+                >
+                  Sign In
+                </AnimatedButton>
+                <Text 
+                  textAlign="center" 
+                  mt={4}
+                  color="gray.600"
+                >
+                  Don't have an account?{' '}
+                  <Link 
+                    color="brand.500" 
+                    onClick={() => navigate('/register')}
+                    fontWeight="semibold"
+                    _hover={{ textDecoration: 'underline' }}
+                  >
+                    Register
+                  </Link>
+                </Text>
+              </Box>
             </Stack>
           </Box>
         </VStack>

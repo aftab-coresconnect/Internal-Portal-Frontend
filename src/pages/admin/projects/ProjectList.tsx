@@ -31,10 +31,19 @@ import {
   TagLabel,
   Wrap,
   WrapItem,
+  Container,
+  VStack,
 } from '@chakra-ui/react';
 import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../../hooks/reduxHooks';
 import { fetchProjects, deleteProject, resetProjectState } from '../../../features/projects/projectSlice';
+import { motion, AnimatePresence } from 'framer-motion';
+import { listItemVariants, fadeInVariants } from '../../../utils/animations';
+import AnimatedButton from '../../../components/ui/AnimatedButton';
+import AnimatedSpinner from '../../../components/ui/AnimatedSpinner';
+import FloatingActionButton from '../../../components/ui/FloatingActionButton';
+import Navbar from '../../../components/layout/Navbar';
+import PageHeader from '../../../components/layout/PageHeader';
 
 const ProjectList: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -114,164 +123,219 @@ const ProjectList: React.FC = () => {
         return 'orange';
       case 'Completed':
         return 'blue';
+      case 'Delivered':
+        return 'purple';
       default:
         return 'gray';
     }
   };
+
+  // Action buttons for the page header
+  const actionButtons = (
+    <AnimatedButton
+      leftIcon={<FaPlus />}
+      colorScheme="brand"
+      onClick={handleAddProject}
+    >
+      Add Project
+    </AnimatedButton>
+  );
   
   return (
-    <Box>
-      <Flex justifyContent="space-between" alignItems="center" mb={6}>
-        <Heading size="lg">Projects</Heading>
-        <HStack>
-          <Button
-            leftIcon={<FaArrowLeft />}
-            variant="outline"
-            onClick={() => navigate('/admin-dashboard')}
-          >
-            Back to Dashboard
-          </Button>
-          <Button
-            leftIcon={<FaPlus />}
-            colorScheme="blue"
-            onClick={() => navigate('/admin-dashboard/projects/add')}
-          >
-            Add Project
-          </Button>
-        </HStack>
-      </Flex>
+    <Box bg="gray.50" minH="100vh">
+      <Navbar />
       
-      <Box mb={5}>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <FaSearch color="gray.300" />
-          </InputLeftElement>
-          <Input 
-            placeholder="Search projects..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+      <Container maxW="container.xl" py={6}>
+        <Box
+          as={motion.div}
+          initial="hidden"
+          animate="visible"
+          variants={fadeInVariants}
+        >
+          <PageHeader 
+            title="Projects" 
+            backButtonLink="/admin-dashboard"
+            actionButtons={actionButtons}
           />
-        </InputGroup>
-      </Box>
-      
-      {loading ? (
-        <Text>Loading projects...</Text>
-      ) : filteredProjects.length > 0 ? (
-        <Box overflowX="auto">
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Title</Th>
-                <Th>Client</Th>
-                <Th>Status</Th>
-                <Th>Start Date</Th>
-                <Th>Deadline</Th>
-                <Th>Tech Stack</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredProjects.map((project) => (
-                <Tr key={project._id}>
-                  <Td fontWeight="medium">{project.title}</Td>
-                  <Td>{project.clientName || '-'}</Td>
-                  <Td>
-                    <Badge colorScheme={getStatusColor(project.status)}>
-                      {project.status}
-                    </Badge>
-                  </Td>
-                  <Td>{new Date(project.startDate).toLocaleDateString()}</Td>
-                  <Td>{new Date(project.deadline).toLocaleDateString()}</Td>
-                  <Td>
-                    <Wrap spacing={1}>
-                      {project.techStack.slice(0, 3).map((tech, index) => (
-                        <WrapItem key={index}>
-                          <Tag size="sm" colorScheme="cyan" borderRadius="full">
-                            <TagLabel>{tech}</TagLabel>
-                          </Tag>
-                        </WrapItem>
-                      ))}
-                      {project.techStack.length > 3 && (
-                        <WrapItem>
-                          <Tag size="sm" colorScheme="gray" borderRadius="full">
-                            <TagLabel>+{project.techStack.length - 3}</TagLabel>
-                          </Tag>
-                        </WrapItem>
-                      )}
-                    </Wrap>
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <Tooltip label="View Details">
-                        <IconButton
-                          aria-label="View project"
-                          icon={<FaEye />}
-                          size="sm"
-                          colorScheme="blue"
-                          variant="outline"
-                          onClick={() => handleViewProject(project._id)}
-                        />
-                      </Tooltip>
-                      <Tooltip label="Edit Project">
-                        <IconButton
-                          aria-label="Edit project"
-                          icon={<FaEdit />}
-                          size="sm"
-                          colorScheme="green"
-                          variant="outline"
-                          onClick={() => handleEditProject(project._id)}
-                        />
-                      </Tooltip>
-                      <Tooltip label="Delete Project">
-                        <IconButton
-                          aria-label="Delete project"
-                          icon={<FaTrash />}
-                          size="sm"
-                          colorScheme="red"
-                          variant="outline"
-                          onClick={() => handleConfirmDelete(project._id)}
-                        />
-                      </Tooltip>
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
-      ) : (
-        <Box p={5} textAlign="center">
-          <Text fontSize="lg">No projects found.</Text>
-        </Box>
-      )}
-      
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Project
-            </AlertDialogHeader>
+          
+          <Box mb={5}>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaSearch color="gray.300" />
+              </InputLeftElement>
+              <Input 
+                placeholder="Search projects..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                borderRadius="lg"
+                boxShadow="sm"
+                bg="white"
+              />
+            </InputGroup>
+          </Box>
+          
+          {loading ? (
+            <Box py={10} textAlign="center">
+              <AnimatedSpinner text="Loading projects..." />
+            </Box>
+          ) : filteredProjects.length > 0 ? (
+            <Box 
+              overflowX="auto" 
+              borderRadius="lg" 
+              boxShadow="md" 
+              bg="white"
+              as={motion.div}
+              initial="hidden"
+              animate="visible"
+              variants={fadeInVariants}
+            >
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th>Title</Th>
+                    <Th>Client</Th>
+                    <Th>Status</Th>
+                    <Th>Start Date</Th>
+                    <Th>Deadline</Th>
+                    <Th>Tech Stack</Th>
+                    <Th>Actions</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  <AnimatePresence>
+                    {filteredProjects.map((project, index) => (
+                      <Tr 
+                        key={project._id}
+                        as={motion.tr}
+                        custom={index}
+                        initial="hidden"
+                        animate="visible"
+                        exit="removed"
+                        variants={listItemVariants}
+                        whileHover={{ backgroundColor: '#F7FAFC' }}
+                      >
+                        <Td fontWeight="medium">{project.title}</Td>
+                        <Td>{project.clientName || '-'}</Td>
+                        <Td>
+                          <Badge colorScheme={getStatusColor(project.status)}>
+                            {project.status}
+                          </Badge>
+                        </Td>
+                        <Td>{new Date(project.startDate).toLocaleDateString()}</Td>
+                        <Td>{new Date(project.deadline).toLocaleDateString()}</Td>
+                        <Td>
+                          <Wrap spacing={1}>
+                            {project.techStack.slice(0, 3).map((tech, index) => (
+                              <WrapItem key={index}>
+                                <Tag size="sm" colorScheme="cyan" borderRadius="full">
+                                  <TagLabel>{tech}</TagLabel>
+                                </Tag>
+                              </WrapItem>
+                            ))}
+                            {project.techStack.length > 3 && (
+                              <WrapItem>
+                                <Tag size="sm" colorScheme="gray" borderRadius="full">
+                                  <TagLabel>+{project.techStack.length - 3}</TagLabel>
+                                </Tag>
+                              </WrapItem>
+                            )}
+                          </Wrap>
+                        </Td>
+                        <Td>
+                          <HStack spacing={2}>
+                            <Tooltip label="View Details">
+                              <IconButton
+                                aria-label="View project"
+                                icon={<FaEye />}
+                                size="sm"
+                                colorScheme="blue"
+                                variant="outline"
+                                onClick={() => handleViewProject(project._id)}
+                                as={motion.button}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              />
+                            </Tooltip>
+                            <Tooltip label="Edit Project">
+                              <IconButton
+                                aria-label="Edit project"
+                                icon={<FaEdit />}
+                                size="sm"
+                                colorScheme="green"
+                                variant="outline"
+                                onClick={() => handleEditProject(project._id)}
+                                as={motion.button}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              />
+                            </Tooltip>
+                            <Tooltip label="Delete Project">
+                              <IconButton
+                                aria-label="Delete project"
+                                icon={<FaTrash />}
+                                size="sm"
+                                colorScheme="red"
+                                variant="outline"
+                                onClick={() => handleConfirmDelete(project._id)}
+                                as={motion.button}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              />
+                            </Tooltip>
+                          </HStack>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </AnimatePresence>
+                </Tbody>
+              </Table>
+            </Box>
+          ) : (
+            <Box p={8} textAlign="center" bg="white" borderRadius="lg" boxShadow="md">
+              <VStack spacing={4}>
+                <Text fontSize="lg">No projects found matching your search.</Text>
+                <AnimatedButton onClick={handleAddProject} colorScheme="brand">
+                  Create Your First Project
+                </AnimatedButton>
+              </VStack>
+            </Box>
+          )}
+          
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog
+            isOpen={isOpen}
+            leastDestructiveRef={cancelRef}
+            onClose={onClose}
+          >
+            <AlertDialogOverlay>
+              <AlertDialogContent as={motion.div} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+                <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                  Delete Project
+                </AlertDialogHeader>
 
-            <AlertDialogBody>
-              Are you sure you want to delete this project? This action cannot be undone.
-            </AlertDialogBody>
+                <AlertDialogBody>
+                  Are you sure? This action cannot be undone.
+                </AlertDialogBody>
 
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleDelete} ml={3}>
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+                <AlertDialogFooter>
+                  <Button ref={cancelRef} onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button colorScheme="red" onClick={handleDelete} ml={3}>
+                    Delete
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogOverlay>
+          </AlertDialog>
+        </Box>
+      </Container>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton
+        tooltipLabel="Add New Project"
+        onClick={handleAddProject}
+      />
     </Box>
   );
 };
