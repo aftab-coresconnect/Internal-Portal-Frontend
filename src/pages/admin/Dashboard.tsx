@@ -45,6 +45,10 @@ const Dashboard: React.FC = () => {
   const navigateToClients = () => {
     navigate('/admin-dashboard/clients');
   };
+  
+  const navigateToUsers = () => {
+    navigate('/admin-dashboard/users');
+  };
 
   const cardBg = useColorModeValue('white', 'gray.700');
   const cardHoverBg = useColorModeValue('gray.50', 'gray.600');
@@ -182,7 +186,7 @@ const Dashboard: React.FC = () => {
             >
               <GridItem>
                 <motion.div variants={cardVariants}>
-                  <AnimatedCard onClick={() => {}} delay={0.1}>
+                  <AnimatedCard onClick={navigateToUsers} delay={0.1}>
                     <VStack spacing={3} align="center" p={5}>
                       <Flex
                         boxSize={10}

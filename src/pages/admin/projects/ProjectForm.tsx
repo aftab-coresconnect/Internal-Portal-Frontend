@@ -37,7 +37,8 @@ import {
   ProjectFormData
 } from '../../../features/projects/projectSlice';
 import { fetchUsers } from '../../../features/auth/authActions';
-import { fetchClients, Client } from '../../../features/clients/clientSlice';
+import { fetchClients } from '../../../features/clients/clientActions';
+import { Client } from '../../../features/clients/clientSlice';
 import { RootState } from '../../../store';
 
 const ProjectForm: React.FC = () => {
@@ -47,7 +48,7 @@ const ProjectForm: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { selectedProject, loading, error, success } = useAppSelector((state) => state.projects);
+  const { selectedProject, loading: isLoading, error, success: message } = useAppSelector((state) => state.projects);
   const { users } = useAppSelector((state) => state.auth);
   const { clients } = useAppSelector((state) => (state as RootState).clients);
 
@@ -133,7 +134,7 @@ const ProjectForm: React.FC = () => {
   
   // Handle success/error states
   useEffect(() => {
-    if (success) {
+    if (message) {
       toast({
         title: isEdit ? 'Project updated' : 'Project created',
         status: 'success',
@@ -154,7 +155,7 @@ const ProjectForm: React.FC = () => {
       });
       dispatch(resetProjectState());
     }
-  }, [success, error, toast, dispatch, navigate, isEdit]);
+  }, [message, error, toast, dispatch, navigate, isEdit]);
   
   // Form handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -744,7 +745,7 @@ const ProjectForm: React.FC = () => {
             <Button 
               colorScheme="blue" 
               type="submit" 
-              isLoading={loading}
+              isLoading={isLoading}
             >
               {isEdit ? 'Update Project' : 'Create Project'}
             </Button>

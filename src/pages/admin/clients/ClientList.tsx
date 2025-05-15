@@ -28,12 +28,8 @@ import {
 } from '@chakra-ui/react';
 import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../../hooks/reduxHooks';
-import {
-  fetchClients,
-  deleteClient,
-  resetClientState,
-  Client,
-} from '../../../features/clients/clientSlice';
+import { fetchClients, deleteClient } from '../../../features/clients/clientActions';
+import { Client, clearClientError, clearClientMessage } from '../../../features/clients/clientSlice';
 
 const ClientList: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +38,7 @@ const ClientList: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
-  const { clients, loading, error, success } = useAppSelector((state) => state.clients);
+  const { clients, isLoading, error, message } = useAppSelector((state) => state.clients);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -50,21 +46,23 @@ const ClientList: React.FC = () => {
     dispatch(fetchClients());
 
     return () => {
-      dispatch(resetClientState());
+      // Cleanup
+      dispatch(clearClientError());
+      dispatch(clearClientMessage());
     };
   }, [dispatch]);
 
   // Handle success/error notifications
   useEffect(() => {
-    if (success) {
+    if (message) {
       toast({
         title: 'Success',
-        description: 'Client deleted successfully.',
+        description: message,
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
-      dispatch(resetClientState());
+      dispatch(clearClientMessage());
     }
 
     if (error) {
@@ -75,13 +73,15 @@ const ClientList: React.FC = () => {
         duration: 3000,
         isClosable: true,
       });
-      dispatch(resetClientState());
+      dispatch(clearClientError());
     }
-  }, [success, error, toast, dispatch]);
+  }, [message, error, toast, dispatch]);
 
-  // Navigate to different pages
-  const handleAddClient = () => {
-    navigate('/admin-dashboard/clients/add');
+  // Navigate to different pages  
+  // handleAddClient is not used - using inline navigation instead  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars  
+  const handleAddClient = () => {    
+    navigate('/admin-dashboard/clients/add');  
   };
 
   const handleEditClient = (id: string) => {
@@ -148,7 +148,7 @@ const ClientList: React.FC = () => {
         </InputGroup>
       </Box>
 
-      {loading ? (
+      {isLoading ? (
         <Text>Loading clients...</Text>
       ) : clients.length === 0 ? (
         <Box textAlign="center" py={10}>
