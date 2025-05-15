@@ -26,11 +26,14 @@ import {
 import { FaPlus, FaArrowLeft } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../../hooks/reduxHooks';
 import {
-  fetchClientById,
+  getClientById as fetchClientById,
   createClient,
-  updateClient,
+  updateClient
+} from '../../../features/clients/clientActions';
+import {
   clearSelectedClient,
-  resetClientState,
+  clearClientError,
+  clearClientMessage,
   ClientFormData,
   Address
 } from '../../../features/clients/clientSlice';
@@ -42,7 +45,7 @@ const ClientForm: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { selectedClient, loading, error, success } = useAppSelector((state) => state.clients);
+  const { selectedClient, isLoading, error, message } = useAppSelector((state) => state.clients);
 
   // Form state
   const [formData, setFormData] = useState<ClientFormData>({
@@ -74,7 +77,8 @@ const ClientForm: React.FC = () => {
     // Cleanup
     return () => {
       dispatch(clearSelectedClient());
-      dispatch(resetClientState());
+      dispatch(clearClientError());
+      dispatch(clearClientMessage());
     };
   }, [dispatch, isEdit, id]);
   
@@ -102,14 +106,14 @@ const ClientForm: React.FC = () => {
   
   // Handle success/error states
   useEffect(() => {
-    if (success) {
+    if (message) {
       toast({
         title: isEdit ? 'Client updated' : 'Client created',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
-      dispatch(resetClientState());
+      dispatch(clearClientMessage());
       navigate('/admin-dashboard/clients');
     }
     
@@ -121,9 +125,9 @@ const ClientForm: React.FC = () => {
         duration: 3000,
         isClosable: true,
       });
-      dispatch(resetClientState());
+      dispatch(clearClientError());
     }
-  }, [success, error, toast, dispatch, navigate, isEdit]);
+  }, [message, error, toast, dispatch, navigate, isEdit]);
   
   // Form handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -210,7 +214,7 @@ const ClientForm: React.FC = () => {
     }
     
     if (isEdit && id) {
-      dispatch(updateClient({ id, clientData: formData }));
+      dispatch(updateClient({ clientId: id, clientData: formData }));
     } else {
       dispatch(createClient(formData));
     }
@@ -434,7 +438,7 @@ const ClientForm: React.FC = () => {
             <Button 
               colorScheme="blue" 
               type="submit" 
-              isLoading={loading}
+              isLoading={isLoading}
             >
               {isEdit ? 'Update Client' : 'Create Client'}
             </Button>

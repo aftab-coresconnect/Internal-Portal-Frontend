@@ -1,5 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { login, register, logout, fetchUsers, getUserFromToken, updateProfile } from './authActions';
+import { 
+  login, 
+  register, 
+  logout, 
+  fetchUsers, 
+  getUserFromToken, 
+  updateProfile,
+  createUser,
+  getUserById,
+  updateUser,
+  deleteUser,
+  getUsersByRole
+} from './authActions';
 
 // Define user interface
 export interface User {
@@ -27,16 +39,22 @@ export interface User {
 export interface AuthState {
   user: User | null;
   users: User[];
+  usersByRole: Record<string, User[]>;
+  selectedUser: User | null;
   isLoading: boolean;
   error: string | null;
+  message: string | null;
 }
 
 // Initial state
 const initialState: AuthState = {
   user: null,
   users: [],
+  usersByRole: {},
+  selectedUser: null,
   isLoading: false,
   error: null,
+  message: null,
 };
 
 // Create slice
@@ -46,6 +64,12 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    clearMessage: (state) => {
+      state.message = null;
+    },
+    clearSelectedUser: (state) => {
+      state.selectedUser = null;
     }
   },
   extraReducers: (builder) => {
@@ -129,9 +153,120 @@ const authSlice = createSlice({
       .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      
+      // Create user cases
+      .addCase(createUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(createUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.users.push(action.payload.user);
+        state.message = 'User created successfully';
+      })
+      .addCase(createUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Get user by ID cases
+      .addCase(getUserById.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getUserById.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.selectedUser = action.payload;
+      })
+      .addCase(getUserById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Update user cases
+      .addCase(updateUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        
+        // Update in users array
+        const index = state.users.findIndex(u => u._id === action.payload.user._id);
+        if (index !== -1) {
+          state.users[index] = action.payload.user;
+        }
+        
+        // Update in usersByRole if present
+        const role = action.payload.user.role;
+        if (state.usersByRole[role]) {
+          const roleIndex = state.usersByRole[role].findIndex(u => u._id === action.payload.user._id);
+          if (roleIndex !== -1) {
+            state.usersByRole[role][roleIndex] = action.payload.user;
+          }
+        }
+        
+        // Update selectedUser if it's the same user
+        if (state.selectedUser && state.selectedUser._id === action.payload.user._id) {
+          state.selectedUser = action.payload.user;
+        }
+        
+        state.message = 'User updated successfully';
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Delete user cases
+      .addCase(deleteUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        
+        // Remove from users array
+        state.users = state.users.filter(user => user._id !== action.payload.userId);
+        
+        // Remove from usersByRole if present
+        Object.keys(state.usersByRole).forEach(role => {
+          state.usersByRole[role] = state.usersByRole[role].filter(
+            user => user._id !== action.payload.userId
+          );
+        });
+        
+        // Clear selectedUser if it's the deleted user
+        if (state.selectedUser && state.selectedUser._id === action.payload.userId) {
+          state.selectedUser = null;
+        }
+        
+        state.message = 'User deleted successfully';
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Get users by role cases
+      .addCase(getUsersByRole.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getUsersByRole.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.usersByRole[action.payload.role] = action.payload.users;
+      })
+      .addCase(getUsersByRole.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, clearMessage, clearSelectedUser } = authSlice.actions;
 export default authSlice.reducer; 

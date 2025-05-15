@@ -26,6 +26,9 @@ import ClientList from './pages/admin/clients/ClientList';
 import ClientForm from './pages/admin/clients/ClientForm';
 import ClientDetails from './pages/admin/clients/ClientDetails';
 
+// User Management
+import UserManagement from './pages/admin/UserManagement';
+
 const App: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const location = useLocation();
@@ -162,6 +165,16 @@ const App: React.FC = () => {
               element={
                 <PageTransition>
                   <ProtectedRoute component={ClientDetails} requiredRole="admin" />
+                </PageTransition>
+              } 
+            />
+            
+            {/* User Management Route */}
+            <Route 
+              path="/admin-dashboard/users" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={UserManagement} requiredRole="admin" />
                 </PageTransition>
               } 
             />

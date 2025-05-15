@@ -1,5 +1,12 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import api from '../../api/axios';
+import { createSlice } from '@reduxjs/toolkit';
+import {
+  fetchClients,
+  getClientById,
+  createClient,
+  updateClient,
+  deleteClient,
+  Client as ClientType
+} from './clientActions';
 
 // Client types
 export interface Address {
@@ -36,224 +43,130 @@ export interface ClientFormData {
   painPoints?: string[];
 }
 
-interface ClientState {
-  clients: Client[];
-  selectedClient: Client | null;
-  loading: boolean;
+// Define client state interface
+export interface ClientState {
+  clients: ClientType[];
+  selectedClient: ClientType | null;
+  isLoading: boolean;
   error: string | null;
-  success: boolean;
+  message: string | null;
 }
 
+// Initial state
 const initialState: ClientState = {
   clients: [],
   selectedClient: null,
-  loading: false,
+  isLoading: false,
   error: null,
-  success: false,
+  message: null,
 };
 
-// Get all clients
-export const fetchClients = createAsyncThunk(
-  'clients/fetchClients',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.get('/clients');
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch clients');
-    }
-  }
-);
-
-// Get client by ID
-export const fetchClientById = createAsyncThunk(
-  'clients/fetchClientById',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      const { data } = await api.get(`/clients/${id}`);
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch client');
-    }
-  }
-);
-
-// Create new client
-export const createClient = createAsyncThunk(
-  'clients/createClient',
-  async (clientData: ClientFormData, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post('/clients', clientData);
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create client');
-    }
-  }
-);
-
-// Update client
-export const updateClient = createAsyncThunk(
-  'clients/updateClient',
-  async ({ id, clientData }: { id: string; clientData: ClientFormData }, { rejectWithValue }) => {
-    try {
-      const { data } = await api.put(`/clients/${id}`, clientData);
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update client');
-    }
-  }
-);
-
-// Delete client
-export const deleteClient = createAsyncThunk(
-  'clients/deleteClient',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      await api.delete(`/clients/${id}`);
-      return id;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete client');
-    }
-  }
-);
-
-// Link project to client
-export const linkProject = createAsyncThunk(
-  'clients/linkProject',
-  async ({ clientId, projectId }: { clientId: string; projectId: string }, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post(`/clients/${clientId}/link-project/${projectId}`);
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to link project');
-    }
-  }
-);
-
-// Unlink project from client
-export const unlinkProject = createAsyncThunk(
-  'clients/unlinkProject',
-  async ({ clientId, projectId }: { clientId: string; projectId: string }, { rejectWithValue }) => {
-    try {
-      const { data } = await api.delete(`/clients/${clientId}/unlink-project/${projectId}`);
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to unlink project');
-    }
-  }
-);
-
+// Create slice
 const clientSlice = createSlice({
   name: 'clients',
   initialState,
   reducers: {
-    resetClientState: (state) => {
-      state.loading = false;
+    clearClientError: (state) => {
       state.error = null;
-      state.success = false;
+    },
+    clearClientMessage: (state) => {
+      state.message = null;
     },
     clearSelectedClient: (state) => {
       state.selectedClient = null;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch all clients
+      // Fetch clients cases
       .addCase(fetchClients.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchClients.fulfilled, (state, action: PayloadAction<Client[]>) => {
-        state.loading = false;
+      .addCase(fetchClients.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.clients = action.payload;
       })
       .addCase(fetchClients.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.payload as string;
       })
-      // Fetch client by id
-      .addCase(fetchClientById.pending, (state) => {
-        state.loading = true;
+      
+      // Get client by ID cases
+      .addCase(getClientById.pending, (state) => {
+        state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchClientById.fulfilled, (state, action: PayloadAction<Client>) => {
-        state.loading = false;
+      .addCase(getClientById.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.selectedClient = action.payload;
       })
-      .addCase(fetchClientById.rejected, (state, action) => {
-        state.loading = false;
+      .addCase(getClientById.rejected, (state, action) => {
+        state.isLoading = false;
         state.error = action.payload as string;
       })
-      // Create client
+      
+      // Create client cases
       .addCase(createClient.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
-        state.success = false;
       })
-      .addCase(createClient.fulfilled, (state, action: PayloadAction<Client>) => {
-        state.loading = false;
+      .addCase(createClient.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.clients.push(action.payload);
-        state.success = true;
+        state.message = 'Client created successfully';
       })
       .addCase(createClient.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.payload as string;
-        state.success = false;
       })
-      // Update client
+      
+      // Update client cases
       .addCase(updateClient.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
-        state.success = false;
       })
-      .addCase(updateClient.fulfilled, (state, action: PayloadAction<Client>) => {
-        state.loading = false;
-        const index = state.clients.findIndex((c) => c._id === action.payload._id);
+      .addCase(updateClient.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const index = state.clients.findIndex(c => c._id === action.payload._id);
         if (index !== -1) {
           state.clients[index] = action.payload;
         }
-        state.selectedClient = action.payload;
-        state.success = true;
+        
+        // Update selectedClient if it's the same client
+        if (state.selectedClient && state.selectedClient._id === action.payload._id) {
+          state.selectedClient = action.payload;
+        }
+        
+        state.message = 'Client updated successfully';
       })
       .addCase(updateClient.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.payload as string;
-        state.success = false;
       })
-      // Delete client
+      
+      // Delete client cases
       .addCase(deleteClient.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
-        state.success = false;
       })
-      .addCase(deleteClient.fulfilled, (state, action: PayloadAction<string>) => {
-        state.loading = false;
-        state.clients = state.clients.filter((c) => c._id !== action.payload);
-        state.success = true;
+      .addCase(deleteClient.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.clients = state.clients.filter(client => client._id !== action.payload.clientId);
+        
+        // Clear selectedClient if it's the deleted client
+        if (state.selectedClient && state.selectedClient._id === action.payload.clientId) {
+          state.selectedClient = null;
+        }
+        
+        state.message = 'Client deleted successfully';
       })
       .addCase(deleteClient.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.payload as string;
-        state.success = false;
-      })
-      // Link project
-      .addCase(linkProject.fulfilled, (state, action: PayloadAction<Client>) => {
-        state.selectedClient = action.payload;
-        const index = state.clients.findIndex((c) => c._id === action.payload._id);
-        if (index !== -1) {
-          state.clients[index] = action.payload;
-        }
-      })
-      // Unlink project
-      .addCase(unlinkProject.fulfilled, (state, action: PayloadAction<Client>) => {
-        state.selectedClient = action.payload;
-        const index = state.clients.findIndex((c) => c._id === action.payload._id);
-        if (index !== -1) {
-          state.clients[index] = action.payload;
-        }
       });
   },
 });
 
-export const { resetClientState, clearSelectedClient } = clientSlice.actions;
+export const { clearClientError, clearClientMessage, clearSelectedClient } = clientSlice.actions;
 export default clientSlice.reducer; 

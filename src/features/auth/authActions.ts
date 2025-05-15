@@ -104,4 +104,86 @@ export const updateProfile = createAsyncThunk(
       return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
     }
   }
+);
+
+// Create user (admin only)
+export const createUser = createAsyncThunk(
+  'auth/createUser',
+  async (
+    userData: { 
+      name: string; 
+      email: string; 
+      password: string; 
+      role: string;
+      title?: string;
+      department?: string;
+      isActive?: boolean;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.post('/auth/users', userData);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create user');
+    }
+  }
+);
+
+// Get user by ID (admin only)
+export const getUserById = createAsyncThunk(
+  'auth/getUserById',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`/auth/users/${userId}`);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user');
+    }
+  }
+);
+
+// Update user (admin only)
+export const updateUser = createAsyncThunk(
+  'auth/updateUser',
+  async (
+    { userId, userData }: { 
+      userId: string; 
+      userData: Partial<User> 
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.put(`/auth/users/${userId}`, userData);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update user');
+    }
+  }
+);
+
+// Delete user (admin only)
+export const deleteUser = createAsyncThunk(
+  'auth/deleteUser',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const { data } = await api.delete(`/auth/users/${userId}`);
+      return { userId, ...data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete user');
+    }
+  }
+);
+
+// Get users by role (admin only)
+export const getUsersByRole = createAsyncThunk(
+  'auth/getUsersByRole',
+  async (role: string, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`/auth/users/role/${role}`);
+      return { role, users: data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch users by role');
+    }
+  }
 ); 
