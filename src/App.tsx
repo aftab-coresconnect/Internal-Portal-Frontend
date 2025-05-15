@@ -8,6 +8,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import UserDashboard from './pages/user/Dashboard';
 import EditProfile from './pages/user/EditProfile';
 import TaskList from './pages/user/TaskList';
+import Projects from './pages/user/Projects';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAppSelector, useAppDispatch } from './hooks/reduxHooks';
 import { getUserFromToken } from './features/auth/authActions';
@@ -188,6 +189,15 @@ const App: React.FC = () => {
               element={
                 <PageTransition>
                   <ProtectedRoute component={TaskList} requiredRole={['developer', 'teamLead']} />
+                </PageTransition>
+              } 
+            />
+            
+            <Route 
+              path="/user-dashboard/projects" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={Projects} requiredRole={['developer', 'teamLead']} />
                 </PageTransition>
               } 
             />

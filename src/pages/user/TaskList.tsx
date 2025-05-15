@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
   Heading,
   Text,
-  VStack,
   HStack,
   Table,
   Thead,
@@ -23,85 +22,35 @@ import {
   InputGroup,
   InputLeftElement,
   Select,
-  Divider,
+  Spinner,
+  Center,
 } from '@chakra-ui/react';
-import { FaSearch, FaCheck, FaHourglass, FaClock } from 'react-icons/fa';
+import { FaSearch, FaCheck, FaHourglass } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { useAppSelector } from '../../hooks/reduxHooks';
+import { useAppSelector, useAppDispatch } from '../../hooks/reduxHooks';
+import { fetchUserMilestones, updateMilestone } from '../../features/milestones/milestoneSlice';
 import Navbar from '../../components/layout/Navbar';
 import PageHeader from '../../components/layout/PageHeader';
 import { fadeInVariants, listItemVariants } from '../../utils/animations';
 
-// Mock data for tasks - would be fetched from API in real app
-const mockTasks = [
-  {
-    id: '1',
-    title: 'Implement Authentication',
-    project: 'Internal Portal App',
-    priority: 'High',
-    status: 'Completed',
-    dueDate: '2023-05-10',
-  },
-  {
-    id: '2',
-    title: 'Create Dashboard UI',
-    project: 'Internal Portal App',
-    priority: 'High',
-    status: 'Completed',
-    dueDate: '2023-05-15',
-  },
-  {
-    id: '3',
-    title: 'Add Role Based Access',
-    project: 'Internal Portal App',
-    priority: 'Medium',
-    status: 'In Progress',
-    dueDate: '2023-05-20',
-  },
-  {
-    id: '4',
-    title: 'Design API Structure',
-    project: 'API Integration',
-    priority: 'High',
-    status: 'Pending',
-    dueDate: '2023-05-25',
-  },
-  {
-    id: '5',
-    title: 'Implement Frontend Components',
-    project: 'Internal Portal App',
-    priority: 'Medium',
-    status: 'In Progress',
-    dueDate: '2023-05-30',
-  },
-  {
-    id: '6',
-    title: 'Setup Database Schema',
-    project: 'API Integration',
-    priority: 'High',
-    status: 'Pending',
-    dueDate: '2023-06-05',
-  },
-  {
-    id: '7',
-    title: 'Write Unit Tests',
-    project: 'Internal Portal App',
-    priority: 'Low',
-    status: 'Pending',
-    dueDate: '2023-06-10',
-  },
-];
-
 const TaskList: React.FC = () => {
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [filterStatus, setFilterStatus] = React.useState('');
+  const { userMilestones, loading } = useAppSelector((state) => state.milestones);
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+
+  // Fetch user milestones on component mount
+  useEffect(() => {
+    dispatch(fetchUserMilestones());
+  }, [dispatch]);
 
   // Filter tasks based on search term and status filter
-  const filteredTasks = mockTasks.filter(
-    (task) =>
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filterStatus === '' || task.status === filterStatus)
+  const filteredTasks = userMilestones.filter(
+    (milestone) =>
+      milestone.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (filterStatus === '' || milestone.status === filterStatus)
   );
 
   // Get status color
@@ -111,7 +60,9 @@ const TaskList: React.FC = () => {
         return 'green';
       case 'In Progress':
         return 'orange';
-      case 'Pending':
+      case 'Not Started':
+        return 'blue';
+      case 'Delayed':
         return 'red';
       default:
         return 'gray';
@@ -134,12 +85,27 @@ const TaskList: React.FC = () => {
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
+  // Update milestone status
+  const handleUpdateStatus = (id: string, newStatus: 'Not Started' | 'In Progress' | 'Completed' | 'Delayed') => {
+    dispatch(updateMilestone({
+      id,
+      milestoneData: {
+        status: newStatus,
+        completedDate: newStatus === 'Completed' ? new Date().toISOString() : undefined
+      }
+    }));
   };
 
   return (
@@ -178,7 +144,8 @@ const TaskList: React.FC = () => {
                   <option value="">All Tasks</option>
                   <option value="Completed">Completed</option>
                   <option value="In Progress">In Progress</option>
-                  <option value="Pending">Pending</option>
+                  <option value="Not Started">Not Started</option>
+                  <option value="Delayed">Delayed</option>
                 </Select>
               </Flex>
             </CardBody>
@@ -206,87 +173,110 @@ const TaskList: React.FC = () => {
               </Heading>
             </CardHeader>
             <CardBody>
-              <Box overflowX="auto">
-                <Table variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th>Task</Th>
-                      <Th>Project</Th>
-                      <Th>Priority</Th>
-                      <Th>Status</Th>
-                      <Th>Due Date</Th>
-                      <Th>Action</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {filteredTasks.map((task, index) => (
-                      <Tr
-                        key={task.id}
-                        as={motion.tr}
-                        custom={index}
-                        variants={listItemVariants}
-                        initial="hidden"
-                        animate="visible"
-                        whileHover={{ backgroundColor: '#F7FAFC' }}
-                      >
-                        <Td fontWeight="medium">{task.title}</Td>
-                        <Td>{task.project}</Td>
-                        <Td>
-                          <Badge colorScheme={getPriorityColor(task.priority)}>
-                            {task.priority}
-                          </Badge>
-                        </Td>
-                        <Td>
-                          <Badge colorScheme={getStatusColor(task.status)}>
-                            {task.status}
-                          </Badge>
-                        </Td>
-                        <Td>{formatDate(task.dueDate)}</Td>
-                        <Td>
-                          <HStack spacing={2}>
-                            <Tooltip
-                              label={
-                                task.status === 'Completed'
-                                  ? 'Completed'
-                                  : 'Mark as Complete'
-                              }
-                            >
-                              <IconButton
-                                aria-label="Mark as complete"
-                                icon={<FaCheck />}
-                                size="sm"
-                                colorScheme={
-                                  task.status === 'Completed' ? 'green' : 'gray'
-                                }
-                                isDisabled={task.status === 'Completed'}
-                              />
-                            </Tooltip>
-                            <Tooltip
-                              label={
-                                task.status === 'In Progress'
-                                  ? 'In Progress'
-                                  : 'Mark as In Progress'
-                              }
-                            >
-                              <IconButton
-                                aria-label="Mark as in progress"
-                                icon={<FaHourglass />}
-                                size="sm"
-                                colorScheme={
-                                  task.status === 'In Progress'
-                                    ? 'orange'
-                                    : 'gray'
-                                }
-                                isDisabled={task.status === 'In Progress'}
-                              />
-                            </Tooltip>
-                          </HStack>
-                        </Td>
+              {loading ? (
+                <Center py={6}>
+                  <Spinner color="brand.500" size="xl" />
+                </Center>
+              ) : filteredTasks.length === 0 ? (
+                <Box textAlign="center" py={6}>
+                  <Text color="gray.500">
+                    {searchTerm || filterStatus 
+                      ? "No tasks match your search criteria" 
+                      : "You have no assigned tasks at the moment"}
+                  </Text>
+                </Box>
+              ) : (
+                <Box overflowX="auto">
+                  <Table variant="simple">
+                    <Thead>
+                      <Tr>
+                        <Th>Task</Th>
+                        <Th>Project</Th>
+                        <Th>Priority</Th>
+                        <Th>Status</Th>
+                        <Th>Due Date</Th>
+                        <Th>Action</Th>
                       </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </Box>
+                    </Thead>
+                    <Tbody>
+                      {filteredTasks.map((task, index) => (
+                        <Tr
+                          key={task._id}
+                          as={motion.tr}
+                          custom={index}
+                          variants={listItemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          whileHover={{ backgroundColor: '#F7FAFC' }}
+                        >
+                          <Td fontWeight="medium">{task.title}</Td>
+                          <Td>
+                            {task.project && 
+                             typeof task.project === 'object' && 
+                             task.project !== null &&
+                             'title' in task.project
+                              ? String((task.project as {title: string}).title) 
+                              : 'Unknown Project'}
+                          </Td>
+                          <Td>
+                            <Badge colorScheme={getPriorityColor(task.priority)}>
+                              {task.priority}
+                            </Badge>
+                          </Td>
+                          <Td>
+                            <Badge colorScheme={getStatusColor(task.status)}>
+                              {task.status}
+                            </Badge>
+                          </Td>
+                          <Td>{formatDate(task.dueDate)}</Td>
+                          <Td>
+                            <HStack spacing={2}>
+                              <Tooltip
+                                label={
+                                  task.status === 'Completed'
+                                    ? 'Completed'
+                                    : 'Mark as Complete'
+                                }
+                              >
+                                <IconButton
+                                  aria-label="Mark as complete"
+                                  icon={<FaCheck />}
+                                  size="sm"
+                                  colorScheme={
+                                    task.status === 'Completed' ? 'green' : 'gray'
+                                  }
+                                  isDisabled={task.status === 'Completed'}
+                                  onClick={() => handleUpdateStatus(task._id, 'Completed')}
+                                />
+                              </Tooltip>
+                              <Tooltip
+                                label={
+                                  task.status === 'In Progress'
+                                    ? 'In Progress'
+                                    : 'Mark as In Progress'
+                                }
+                              >
+                                <IconButton
+                                  aria-label="Mark as in progress"
+                                  icon={<FaHourglass />}
+                                  size="sm"
+                                  colorScheme={
+                                    task.status === 'In Progress'
+                                      ? 'orange'
+                                      : 'gray'
+                                  }
+                                  isDisabled={task.status === 'In Progress'}
+                                  onClick={() => handleUpdateStatus(task._id, 'In Progress')}
+                                />
+                              </Tooltip>
+                            </HStack>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
+              )}
             </CardBody>
           </Card>
         </Box>

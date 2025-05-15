@@ -84,6 +84,7 @@ export interface ProjectFormData {
 
 interface ProjectState {
   projects: Project[];
+  userProjects: Project[];
   selectedProject: Project | null;
   loading: boolean;
   error: string | null;
@@ -92,6 +93,7 @@ interface ProjectState {
 
 const initialState: ProjectState = {
   projects: [],
+  userProjects: [],
   selectedProject: null,
   loading: false,
   error: null,
@@ -218,6 +220,19 @@ export const deleteProject = createAsyncThunk(
   }
 );
 
+// Get projects assigned to the current user
+export const fetchUserProjects = createAsyncThunk(
+  'projects/fetchUserProjects',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get('/projects/user');
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch assigned projects');
+    }
+  }
+);
+
 const projectSlice = createSlice({
   name: 'projects',
   initialState,
@@ -310,6 +325,20 @@ const projectSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
         state.success = false;
+      })
+      
+      // Fetch user projects cases
+      .addCase(fetchUserProjects.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProjects.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userProjects = action.payload;
+      })
+      .addCase(fetchUserProjects.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

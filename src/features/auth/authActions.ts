@@ -9,11 +9,20 @@ export const login = createAsyncThunk(
     try {
       const { data } = await api.post('/auth/login', { email, password });
       
-      // Store user info in localStorage
+      // Make sure we have the token
+      if (!data.token) {
+        return rejectWithValue('Login response missing token');
+      }
+      
+      // Store the token in localStorage
       localStorage.setItem('token', data.token);
+      
+      // Log the response for debugging
+      console.log('Login successful, response:', data);
       
       return data;
     } catch (error: any) {
+      console.error('Login error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
