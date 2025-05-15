@@ -57,6 +57,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
+        // Handle both formats: {user, token} or {user: userObject, token}
         state.user = action.payload.user;
         state.error = null;
       })

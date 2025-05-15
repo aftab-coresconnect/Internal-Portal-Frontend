@@ -40,20 +40,24 @@ export interface MilestoneFormData {
 
 interface MilestoneState {
   milestones: Milestone[];
+  userMilestones: Milestone[];
   projectMilestones: Milestone[];
   selectedMilestone: Milestone | null;
   loading: boolean;
   error: string | null;
   success: boolean;
+  notification: string | null;
 }
 
 const initialState: MilestoneState = {
   milestones: [],
+  userMilestones: [],
   projectMilestones: [],
   selectedMilestone: null,
   loading: false,
   error: null,
   success: false,
+  notification: null,
 };
 
 // Get all milestones for a project
@@ -117,6 +121,19 @@ export const deleteMilestone = createAsyncThunk(
       return id;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to delete milestone');
+    }
+  }
+);
+
+// Get milestones assigned to the current user
+export const fetchUserMilestones = createAsyncThunk(
+  'milestones/fetchUserMilestones',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get('/milestones/user');
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch assigned milestones');
     }
   }
 );
@@ -213,6 +230,19 @@ const milestoneSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
         state.success = false;
+      })
+      // Fetch user milestones
+      .addCase(fetchUserMilestones.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserMilestones.fulfilled, (state, action: PayloadAction<Milestone[]>) => {
+        state.loading = false;
+        state.userMilestones = action.payload;
+      })
+      .addCase(fetchUserMilestones.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
