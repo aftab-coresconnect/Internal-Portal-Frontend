@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
   return (
     <Box bg="gray.50" minH="100vh">
       <Navbar />
-      
+
       <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch" as={motion.div} initial="hidden" animate="visible" variants={fadeInVariants}>
           <Box>
@@ -127,22 +127,22 @@ const Dashboard: React.FC = () => {
                     No projects assigned yet.
                   </Text>
                 ) : (
-                  <VStack spacing={4} align="stretch">
+                <VStack spacing={4} align="stretch">
                     {userProjects.slice(0, 3).map((project) => (
                       <Box key={project._id}>
-                        <Flex justify="space-between">
+                    <Flex justify="space-between">
                           <Text fontWeight="bold">{project.title}</Text>
                           <Badge colorScheme={getStatusColor(project.status)}>{project.status}</Badge>
-                        </Flex>
+                    </Flex>
                         <Progress 
                           value={project.progressPercent || 0} 
                           colorScheme={getStatusColor(project.status)} 
                           mt={2} 
                         />
-                        <Text fontSize="sm" color="gray.500" mt={1}>
+                    <Text fontSize="sm" color="gray.500" mt={1}>
                           Due: {formatDate(project.deadline)}
-                        </Text>
-                      </Box>
+                    </Text>
+                  </Box>
                     ))}
                     {userProjects.length > 3 && (
                       <Box mt={2}>
@@ -157,9 +157,9 @@ const Dashboard: React.FC = () => {
                             View All Projects
                           </Button>
                         </Center>
-                      </Box>
+                  </Box>
                     )}
-                  </VStack>
+                </VStack>
                 )}
               </CardBody>
             </Card>
@@ -188,22 +188,22 @@ const Dashboard: React.FC = () => {
                     No tasks assigned yet.
                   </Text>
                 ) : (
-                  <VStack spacing={4} align="stretch">
+                <VStack spacing={4} align="stretch">
                     {userMilestones.slice(0, 4).map((milestone) => (
                       <Box key={milestone._id}>
-                        <Flex justify="space-between">
+                    <Flex justify="space-between">
                           <Text fontWeight="bold">{milestone.title}</Text>
                           <Badge colorScheme={getStatusColor(milestone.status)}>{milestone.status}</Badge>
-                        </Flex>
-                        <Text fontSize="sm" color="gray.500">
+                    </Flex>
+                    <Text fontSize="sm" color="gray.500">
                           {milestone.project && 
                            typeof milestone.project === 'object' && 
                            milestone.project !== null &&
                            'title' in milestone.project
                              ? String((milestone.project as {title: string}).title) 
                              : 'Unknown Project'}
-                        </Text>
-                      </Box>
+                    </Text>
+                  </Box>
                     ))}
                     {userMilestones.length > 4 && (
                       <>
@@ -217,10 +217,10 @@ const Dashboard: React.FC = () => {
                           >
                             View All Tasks
                           </Button>
-                        </Box>
+                  </Box>
                       </>
                     )}
-                  </VStack>
+                </VStack>
                 )}
               </CardBody>
             </Card>

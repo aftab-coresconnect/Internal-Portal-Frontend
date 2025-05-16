@@ -41,16 +41,28 @@ const Navbar: React.FC = () => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   
-  const navItems = user?.role === 'admin' 
-    ? [
-        { name: 'Dashboard', path: '/admin-dashboard' },
-        { name: 'Projects', path: '/admin-dashboard/projects' },
-        { name: 'Clients', path: '/admin-dashboard/clients' },
-      ]
-    : [
-        { name: 'Dashboard', path: '/user-dashboard' },
-        { name: 'My Tasks', path: '/user-dashboard/tasks' },
-      ];
+  // Define navigation items based on user role
+  let navItems = [];
+  
+  if (user?.role === 'admin') {
+    navItems = [
+      { name: 'Dashboard', path: '/admin-dashboard' },
+      { name: 'Projects', path: '/admin-dashboard/projects' },
+      { name: 'Clients', path: '/admin-dashboard/clients' },
+      { name: 'Users', path: '/admin-dashboard/users' },
+    ];
+  } else if (user?.role === 'client') {
+    navItems = [
+      { name: 'Dashboard', path: '/user-dashboard/clients' },
+      { name: 'Profile', path: '/user-dashboard/edit-profile' },
+    ];
+  } else {
+    navItems = [
+      { name: 'Dashboard', path: '/user-dashboard' },
+      { name: 'My Tasks', path: '/user-dashboard/tasks' },
+      { name: 'Projects', path: '/user-dashboard/projects' },
+    ];
+  }
 
   // Animation variants
   const navVariants = {
@@ -127,7 +139,12 @@ const Navbar: React.FC = () => {
               size="md" 
               mr={2} 
               cursor="pointer" 
-              onClick={() => navigate(user?.role === 'admin' ? '/admin-dashboard' : '/user-dashboard')}
+              onClick={() => navigate(user ? 
+                user.role === 'admin' ? '/admin-dashboard' : 
+                user.role === 'client' ? '/user-dashboard/clients' : 
+                '/user-dashboard' 
+                : '/'
+              )}
             />
             <Text
               textAlign="left"
@@ -205,7 +222,6 @@ const Navbar: React.FC = () => {
                     </Box>
                   </Flex>
                   <MenuDivider />
-                  <MenuItem onClick={() => navigate(user.role === 'admin' ? '/admin-dashboard' : '/user-dashboard')}>Dashboard</MenuItem>
                   <MenuItem onClick={() => navigate('/user-dashboard/edit-profile')}>Edit Profile</MenuItem>
                   <MenuDivider />
                   <MenuItem onClick={handleLogout}>Sign Out</MenuItem>

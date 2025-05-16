@@ -347,16 +347,19 @@ const MilestoneForm: React.FC = () => {
           <FormControl>
             <FormLabel>Assigned Users</FormLabel>
             <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4} maxH="200px" overflowY="auto">
-              {projects.find(p => p._id === (projectId || formData.project))?.assignedDevelopers.map(dev => (
-                <Checkbox 
-                  key={dev._id} 
-                  isChecked={selectedUsers.includes(dev._id)}
-                  onChange={() => handleUserSelection(dev._id)}
-                  mb={2}
-                >
-                  {dev.name} ({dev.role})
-                </Checkbox>
-              ))}
+              {(() => {
+                const project = projects.find(p => p._id === (projectId || formData.project));
+                return project?.assignedDevelopers?.map(dev => (
+                  <Checkbox 
+                    key={dev._id} 
+                    isChecked={selectedUsers.includes(dev._id)}
+                    onChange={() => handleUserSelection(dev._id)}
+                    mb={2}
+                  >
+                    {dev.name} ({dev.role})
+                  </Checkbox>
+                )) || [];
+              })()}
             </Box>
           </FormControl>
           

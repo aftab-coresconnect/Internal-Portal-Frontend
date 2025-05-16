@@ -3,12 +3,12 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { Box, ChakraProvider } from '@chakra-ui/react';
 import HomePage from './pages/HomePage';
 import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
 import AdminDashboard from './pages/admin/Dashboard';
 import UserDashboard from './pages/user/Dashboard';
 import EditProfile from './pages/user/EditProfile';
 import TaskList from './pages/user/TaskList';
 import Projects from './pages/user/Projects';
+import ClientDashboard from './pages/user/clients/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAppSelector, useAppDispatch } from './hooks/reduxHooks';
 import { getUserFromToken } from './features/auth/authActions';
@@ -50,8 +50,14 @@ const App: React.FC = () => {
 
     // Authenticated users redirects
     if (user) {
-      if (['/login', '/register', '/', '/home'].includes(pathname)) {
-        navigate(user.role === 'admin' ? '/admin-dashboard' : '/user-dashboard');
+      if (['/login', '/', '/home'].includes(pathname)) {
+        if (user.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else if (user.role === 'client') {
+          navigate('/user-dashboard/clients');
+        } else {
+          navigate('/user-dashboard');
+        }
       }
     } 
     // Non-authenticated users redirects
@@ -71,27 +77,12 @@ const App: React.FC = () => {
 
   return (
     <ChakraProvider theme={theme}>
-      <Box>
+      <Box minH="100vh">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            {/* Public routes */}
-            <Route path="/login" element={
-              <PageTransition>
-                <Login />
-              </PageTransition>
-            } />
-            <Route path="/register" element={
-              <PageTransition>
-                <Register />
-              </PageTransition>
-            } />
-            <Route path="/home" element={
-              <PageTransition>
-                <HomePage />
-              </PageTransition>
-            } />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
             
-            {/* Protected routes */}
             <Route 
               path="/admin-dashboard" 
               element={
@@ -192,7 +183,7 @@ const App: React.FC = () => {
               path="/user-dashboard/edit-profile" 
               element={
                 <PageTransition>
-                  <ProtectedRoute component={EditProfile} requiredRole={['developer', 'teamLead']} />
+                  <ProtectedRoute component={EditProfile} requiredRole={['developer', 'teamLead', 'client']} />
                 </PageTransition>
               } 
             />
@@ -211,6 +202,16 @@ const App: React.FC = () => {
               element={
                 <PageTransition>
                   <ProtectedRoute component={Projects} requiredRole={['developer', 'teamLead']} />
+                </PageTransition>
+              } 
+            />
+            
+            {/* Client Dashboard Route */}
+            <Route 
+              path="/user-dashboard/clients" 
+              element={
+                <PageTransition>
+                  <ProtectedRoute component={ClientDashboard} requiredRole="client" />
                 </PageTransition>
               } 
             />

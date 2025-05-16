@@ -46,9 +46,9 @@ const Projects: React.FC = () => {
     navigate(`/user-dashboard/projects/${id}`);
   };
   
-  const filteredProjects = userProjects.filter(project => 
+  const filteredProjects = userProjects.filter(project =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (project.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (project.clientName && project.clientName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
@@ -146,7 +146,7 @@ const Projects: React.FC = () => {
                         Client: {project.clientName || 'N/A'}
                       </Text>
                       <HStack spacing={4}>
-                        <Text color="gray.600">Start: {formatDate(project.startDate)}</Text>
+                        <Text color="gray.600">Start: {project.startDate ? formatDate(project.startDate) : 'Not set'}</Text>
                         <Text color="gray.600">Due: {formatDate(project.deadline)}</Text>
                       </HStack>
                     </Flex>
@@ -161,7 +161,7 @@ const Projects: React.FC = () => {
                     </Box>
                     
                     <Wrap spacing={2} mb={2}>
-                      {project.techStack.map((tech, index) => (
+                      {project.techStack?.map((tech, index) => (
                         <WrapItem key={index}>
                           <Tag size="sm" colorScheme="cyan" borderRadius="full">
                             <TagLabel>{tech}</TagLabel>

@@ -24,23 +24,28 @@ export interface Project {
   _id: string;
   title: string;
   description: string;
+  status: 'Active' | 'Paused' | 'Completed' | 'Delivered';
+  priority: 'High' | 'Medium' | 'Low';
+  deadline: string;
+  startDate: string;
+  progressPercent?: number;
   clientId: string;
   clientName: string;
-  status: 'Active' | 'Paused' | 'Completed' | 'Delivered';
-  priority?: 'High' | 'Medium' | 'Low';
+  projectManager?: {
+    _id: string;
+    name: string;
+  };
+  assignedDevelopers: Array<{
+    _id: string;
+    name: string;
+    role: string;
+  }>;
+  techStack: string[];
+  budget?: number;
   figmaLink?: string;
   repoLink?: string;
   jiraLink?: string;
-  startDate: string;
-  deadline: string;
-  techStack: string[];
-  assignedDevelopers: Developer[];
-  projectManager?: Developer;
-  milestones?: string[];
-  tags?: string[];
-  budget?: number;
-  spentBudget?: number;
-  progressPercent?: number;
+  tags: string[];
   satisfaction?: {
     quality?: number;
     communication?: number;
@@ -105,9 +110,12 @@ export const fetchProjects = createAsyncThunk(
   'projects/fetchProjects',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('[fetchProjects] Fetching all projects');
       const { data } = await api.get('/projects');
+      console.log('[fetchProjects] Successfully fetched projects:', data.length);
       return data;
     } catch (error: any) {
+      console.error('[fetchProjects] Error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch projects');
     }
   }
