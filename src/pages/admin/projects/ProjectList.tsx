@@ -109,9 +109,9 @@ const ProjectList: React.FC = () => {
     navigate('/admin-dashboard/projects/add');
   };
   
-  const filteredProjects = projects.filter(project => 
+  const filteredProjects = projects.filter(project =>
     project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (project.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (project.clientName && project.clientName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
@@ -221,18 +221,18 @@ const ProjectList: React.FC = () => {
                             {project.status}
                           </Badge>
                         </Td>
-                        <Td>{new Date(project.startDate).toLocaleDateString()}</Td>
+                        <Td>{project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Not set'}</Td>
                         <Td>{new Date(project.deadline).toLocaleDateString()}</Td>
                         <Td>
                           <Wrap spacing={1}>
-                            {project.techStack.slice(0, 3).map((tech, index) => (
+                            {project.techStack?.slice(0, 3).map((tech, index) => (
                               <WrapItem key={index}>
                                 <Tag size="sm" colorScheme="cyan" borderRadius="full">
                                   <TagLabel>{tech}</TagLabel>
                                 </Tag>
                               </WrapItem>
                             ))}
-                            {project.techStack.length > 3 && (
+                            {project.techStack && project.techStack.length > 3 && (
                               <WrapItem>
                                 <Tag size="sm" colorScheme="gray" borderRadius="full">
                                   <TagLabel>+{project.techStack.length - 3}</TagLabel>

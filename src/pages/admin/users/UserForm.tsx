@@ -18,7 +18,8 @@ import {
   FormHelperText,
   VStack,
   HStack,
-  useToast
+  useToast,
+  Text
 } from '@chakra-ui/react';
 import { User } from '../../../features/auth/authSlice';
 import { createUser, updateUser } from '../../../features/auth/authActions';
@@ -145,7 +146,9 @@ const UserForm: React.FC<UserFormProps> = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          {isEdit ? 'Edit User' : 'Create User'}
+          {isEdit 
+            ? `Edit ${defaultRole.charAt(0).toUpperCase() + defaultRole.slice(1)}` 
+            : `Add ${defaultRole.charAt(0).toUpperCase() + defaultRole.slice(1)}`}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -186,20 +189,7 @@ const UserForm: React.FC<UserFormProps> = ({
             </FormControl>
 
             <FormControl>
-              <FormLabel>Role</FormLabel>
-              <Select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <option value="admin">Admin</option>
-                <option value="teamLead">Team Lead</option>
-                <option value="developer">Developer</option>
-              </Select>
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Job Title</FormLabel>
+              <FormLabel>Title</FormLabel>
               <Input
                 name="title"
                 value={formData.title}
@@ -218,18 +208,18 @@ const UserForm: React.FC<UserFormProps> = ({
               />
             </FormControl>
 
-            <FormControl>
-              <FormLabel htmlFor="isActive">Active Status</FormLabel>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel mb="0">Active Status</FormLabel>
               <Switch
-                id="isActive"
-                name="isActive"
                 isChecked={formData.isActive}
                 onChange={handleSwitchChange}
-                colorScheme="green"
               />
-              <FormHelperText>
-                {formData.isActive ? 'User is active' : 'User is inactive'}
-              </FormHelperText>
+            </FormControl>
+
+            <FormControl>
+              <Text color="gray.500" fontSize="sm">
+                Role: {defaultRole.charAt(0).toUpperCase() + defaultRole.slice(1)}
+              </Text>
             </FormControl>
           </VStack>
         </ModalBody>
@@ -238,7 +228,9 @@ const UserForm: React.FC<UserFormProps> = ({
           <HStack spacing={3}>
             <Button variant="ghost" onClick={onClose}>Cancel</Button>
             <Button colorScheme="blue" onClick={handleSubmit}>
-              {isEdit ? 'Update User' : 'Create User'}
+              {isEdit 
+                ? `Update ${defaultRole.charAt(0).toUpperCase() + defaultRole.slice(1)}` 
+                : `Create ${defaultRole.charAt(0).toUpperCase() + defaultRole.slice(1)}`}
             </Button>
           </HStack>
         </ModalFooter>

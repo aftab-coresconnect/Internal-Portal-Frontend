@@ -22,8 +22,9 @@ import {
   Grid,
   GridItem,
   Divider,
+  Icon,
 } from '@chakra-ui/react';
-import { FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAppDispatch, useAppSelector } from '../../../hooks/reduxHooks';
 import {
   getClientById as fetchClientById,
@@ -51,6 +52,7 @@ const ClientForm: React.FC = () => {
   const [formData, setFormData] = useState<ClientFormData>({
     name: '',
     email: '',
+    password: '',
     phone: '',
     companyName: '',
     website: '',
@@ -67,6 +69,7 @@ const ClientForm: React.FC = () => {
   
   const [note, setNote] = useState('');
   const [painPoint, setPainPoint] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   // Load client data if editing
   useEffect(() => {
@@ -88,6 +91,7 @@ const ClientForm: React.FC = () => {
       setFormData({
         name: selectedClient.name,
         email: selectedClient.email,
+        password: '',
         phone: selectedClient.phone || '',
         companyName: selectedClient.companyName || '',
         website: selectedClient.website || '',
@@ -200,6 +204,10 @@ const ClientForm: React.FC = () => {
       handleAddPainPoint();
     }
   };
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,11 +220,19 @@ const ClientForm: React.FC = () => {
       });
       return;
     }
+
+    // Make a copy of form data to submit - never editing the original for clean UI
+    const submitData = { ...formData };
+    
+    // Don't send empty password during edits
+    if (isEdit && !submitData.password) {
+      delete submitData.password;
+    }
     
     if (isEdit && id) {
-      dispatch(updateClient({ clientId: id, clientData: formData }));
+      dispatch(updateClient({ clientId: id, clientData: submitData }));
     } else {
-      dispatch(createClient(formData));
+      dispatch(createClient(submitData));
     }
   };
   
@@ -261,8 +277,38 @@ const ClientForm: React.FC = () => {
               </FormControl>
             </GridItem>
           </Grid>
-          
+
           <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+            <GridItem>
+              <FormControl isRequired={!isEdit}>
+                <FormLabel>{isEdit ? 'New Password (leave blank to keep current)' : 'Password'}</FormLabel>
+                <InputGroup>
+                  <Input 
+                    name="password" 
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password} 
+                    onChange={handleChange} 
+                    placeholder={isEdit ? "Enter new password (optional)" : "Enter password"} 
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button 
+                      h="1.75rem" 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={toggleShowPassword}
+                    >
+                      {showPassword ? <Icon as={FaEyeSlash} /> : <Icon as={FaEye} />}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+                <FormHelperText>
+                  {isEdit 
+                    ? 'Leave blank to keep current password' 
+                    : 'Password for client to login to the system'}
+                </FormHelperText>
+              </FormControl>
+            </GridItem>
+            
             <GridItem>
               <FormControl>
                 <FormLabel>Phone</FormLabel>
@@ -274,7 +320,9 @@ const ClientForm: React.FC = () => {
                 />
               </FormControl>
             </GridItem>
-            
+          </Grid>
+          
+          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
             <GridItem>
               <FormControl>
                 <FormLabel>Company Name</FormLabel>
@@ -286,17 +334,19 @@ const ClientForm: React.FC = () => {
                 />
               </FormControl>
             </GridItem>
+            
+            <GridItem>
+              <FormControl>
+                <FormLabel>Website</FormLabel>
+                <Input 
+                  name="website" 
+                  value={formData.website} 
+                  onChange={handleChange} 
+                  placeholder="Enter company website" 
+                />
+              </FormControl>
+            </GridItem>
           </Grid>
-          
-          <FormControl>
-            <FormLabel>Website</FormLabel>
-            <Input 
-              name="website" 
-              value={formData.website} 
-              onChange={handleChange} 
-              placeholder="Enter company website" 
-            />
-          </FormControl>
           
           <Heading size="md" pt={2}>Address Information</Heading>
           <Divider />

@@ -28,26 +28,6 @@ export const login = createAsyncThunk(
   }
 );
 
-// Register action
-export const register = createAsyncThunk(
-  'auth/register',
-  async (
-    { name, email, password, role }: { name: string; email: string; password: string; role: string },
-    { rejectWithValue }
-  ) => {
-    try {      
-      const { data } = await api.post('/auth/register', { name, email, password, role });
-      
-      // Store user info in localStorage
-      localStorage.setItem('token', data.token);
-      
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
-    }
-  }
-);
-
 // Logout action
 export const logout = createAsyncThunk('auth/logout', async () => {
   localStorage.removeItem('token');

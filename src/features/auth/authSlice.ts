@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { 
   login, 
-  register, 
   logout, 
   fetchUsers, 
   getUserFromToken, 
@@ -25,6 +24,11 @@ export interface User {
   skills?: Array<{ name: string; level: number }>;
   joinedAt?: Date;
   isActive?: boolean;
+  // Role-specific properties
+  companyName?: string; // For clients
+  techStack?: string[]; // For developers
+  toolsUsed?: string[]; // For designers
+  initials?: string; // For all users
   effectiveness?: {
     progressScore: number;
     disciplineScore: number;
@@ -86,21 +90,6 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-      
-      // Register cases
-      .addCase(register.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(register.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user;
-        state.error = null;
-      })
-      .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })

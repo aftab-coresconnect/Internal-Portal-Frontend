@@ -43,7 +43,16 @@ const UserManagement: React.FC = () => {
   const [userToEdit, setUserToEdit] = useState<any>(null);
   
   // Role tabs - these map to the roles in the User model + clients
-  const roles = ['admin', 'developer', 'teamLead', 'client'];
+  const roles = ['admin', 'developer', 'projectManager', 'designer', 'client'];
+  
+  // Display names for roles (for UI presentation)
+  const roleDisplayNames = {
+    admin: 'Admins',
+    developer: 'Developers',
+    projectManager: 'Project Managers',
+    designer: 'Designers',
+    client: 'Clients'
+  };
   
   // Initial data fetch
   useEffect(() => {
@@ -121,7 +130,7 @@ const UserManagement: React.FC = () => {
         email: client.email,
         role: 'client',
         isActive: true,
-        companyName: client.companyName || ''
+        title: client.companyName || ''
       }));
     }
     
@@ -169,7 +178,7 @@ const UserManagement: React.FC = () => {
             <TabList>
               {roles.map((role) => (
                 <Tab key={role}>
-                  {role.charAt(0).toUpperCase() + role.slice(1) + 's'}
+                  {roleDisplayNames[role as keyof typeof roleDisplayNames]}
                 </Tab>
               ))}
             </TabList>
@@ -179,7 +188,7 @@ const UserManagement: React.FC = () => {
               onClick={handleAddButtonClick}
               m={2}
             >
-              {roles[tabIndex] === 'client' ? 'Add Client' : 'Add User'}
+              {roles[tabIndex] === 'client' ? 'Add Client' : `Add ${roles[tabIndex].charAt(0).toUpperCase() + roles[tabIndex].slice(1)}`}
             </Button>
           </Flex>
           

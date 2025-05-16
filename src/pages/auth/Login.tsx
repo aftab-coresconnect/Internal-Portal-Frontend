@@ -44,6 +44,12 @@ const Login: React.FC = () => {
     if (user) {
       if (user.role === 'admin') {
         navigate('/admin-dashboard');
+      } else if (user.role === 'client') {
+        navigate('/user-dashboard/clients');
+      } else if (user.role === 'projectManager') {
+        navigate('/user-dashboard/project-manager');
+      } else if (user.role === 'designer') {
+        navigate('/user-dashboard/designer');
       } else {
         navigate('/user-dashboard');
       }
@@ -221,15 +227,7 @@ const Login: React.FC = () => {
                   mt={4}
                   color="gray.600"
                 >
-                  Don't have an account?{' '}
-                  <Link 
-                    color="brand.500" 
-                    onClick={() => navigate('/register')}
-                    fontWeight="semibold"
-                    _hover={{ textDecoration: 'underline' }}
-                  >
-                    Register
-                  </Link>
+                  Admin users manage all accounts in this system
                 </Text>
               </Box>
             </Stack>

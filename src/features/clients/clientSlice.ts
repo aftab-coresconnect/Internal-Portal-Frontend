@@ -35,6 +35,7 @@ export interface Client {
 export interface ClientFormData {
   name: string;
   email: string;
+  password?: string;
   phone?: string;
   companyName?: string;
   website?: string;

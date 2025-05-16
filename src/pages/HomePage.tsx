@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Heading, Text, Container, Button, VStack, HStack } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { FaSignInAlt, FaUserPlus } from 'react-icons/fa';
+import { FaSignInAlt } from 'react-icons/fa';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,25 +15,14 @@ const HomePage: React.FC = () => {
         <Text fontSize="xl" textAlign="center">
           A comprehensive MERN stack application for managing projects, tracking developer performance, and integrating with external tools
         </Text>
-        <HStack spacing={4}>
-          <Button 
-            colorScheme="blue" 
-            size="lg" 
-            leftIcon={<FaSignInAlt />}
-            onClick={() => navigate('/login')}
-          >
-            Login
-          </Button>
-          <Button 
-            colorScheme="green" 
-            size="lg"
-            variant="outline"
-            leftIcon={<FaUserPlus />}
-            onClick={() => navigate('/register')}
-          >
-            Register
-          </Button>
-        </HStack>
+        <Button 
+          colorScheme="blue" 
+          size="lg" 
+          leftIcon={<FaSignInAlt />}
+          onClick={() => navigate('/login')}
+        >
+          Login
+        </Button>
       </VStack>
     </Container>
   );
